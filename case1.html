@@ -83,7 +83,7 @@
             <div id="mission-instruction" class="instruction"></div>
             <div id="mission-content"></div>
             <div id="word-bank" class="word-bank" style="display:none;"></div>
-            <button id="btn-action" class="btn-action" style="display:none;"></button>
+            <button id="btn-action" class="btn-action" style="display:none;" onclick="checkFill()">VERIFY EVIDENCE</button>
             <div id="mission-msg" style="text-align:center; margin-top:15px; font-weight:bold; min-height:20px; font-size:18px;"></div>
         </div>
 
@@ -131,7 +131,7 @@
             }
         }
 
-        // ================= ฐานข้อมูลด่าน Case 1 (15 ข้อ) =================
+        // ================= ฐานข้อมูลด่าน Case 1 =================
         const missions = [
             { type: 'fill', title: 'รหัสลับ AND (คล้อยตาม) #1', instruction: 'เติมคำเชื่อมให้เป็นธรรมชาติที่สุด (ภาษาพูด)', sentence: 'ฉันไปตลาด ซื้อหมู ซื้อผัก {slot:แล้วก็} กลับบ้าน', choices: ['และ', 'แล้วก็', 'แต่', 'หรือ'] },
             { type: 'choice', title: 'รหัสลับ AND (คล้อยตาม) #2', instruction: 'ประโยค: <b>"He is handsome and polite."</b><br>คำแปลข้อใดลื่นไหลและดูเป็นธรรมชาติที่สุด?', choices: [{ text: 'A. เขาหล่อและเขาเป็นคนสุภาพ', correct: false }, { text: 'B. เขาหล่อแถมยังสุภาพอีกด้วย', correct: true }, { text: 'C. เขาหล่อกับสุภาพ', correct: false }] },
@@ -155,6 +155,7 @@
         let timerInterval;
         let timeLeft = 30;
         let agentData = JSON.parse(localStorage.getItem('agentData'));
+        let isChecking = false; // ป้องกันการกดรัวๆ
 
         document.addEventListener("DOMContentLoaded", () => {
             if (!agentData) { window.location.href = 'index.html'; return; }
@@ -176,6 +177,8 @@
             }
 
             timerInterval = setInterval(() => {
+                if(isChecking) return; // ถ้ากำลังตรวจคำตอบอยู่ ให้หยุดเวลาชั่วคราว
+                
                 timeLeft--;
                 updateTimerUI();
                 
@@ -207,10 +210,10 @@
         }
 
         function useTimeItem() {
-            if (parseInt(agentData.itemTime) > 0) {
+            if (parseInt(agentData.itemTime) > 0 && !isChecking) {
                 playSound('success');
                 agentData.itemTime = parseInt(agentData.itemTime) - 1;
-                localStorage.setItem('agentData', JSON.stringify(agentData)); // เซฟในเครื่องไปก่อน ค่อยซิงค์ตอนจบ
+                localStorage.setItem('agentData', JSON.stringify(agentData)); 
                 
                 timeLeft += 15;
                 updateTimerUI();
@@ -219,16 +222,16 @@
                     document.getElementById('btn-use-time').style.display = 'none';
                 }
                 
-                // ส่งคำสั่งหักไอเทมในชีตเบื้องหลัง (ไม่ต้องรอผล)
                 fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&rewardType=time&rewardAmount=-1`).catch(e=>{});
             }
         }
 
         function handleTimeOut() {
+            isChecking = true;
             playSound('wrong');
             document.querySelectorAll('.choice-btn, .drop-zone, .word-piece, .btn-action').forEach(b => b.style.pointerEvents = 'none');
             const msg = document.getElementById('mission-msg');
-            msg.innerText = 'TIME OUT! ภารกิจล้มเหลว'; msg.style.color = '#ff5252';
+            msg.innerText = 'TIME OUT! หมดเวลา! ข้ามข้อถัดไป'; msg.style.color = '#ff5252';
             
             setTimeout(() => { 
                 currentIndex++; 
@@ -238,6 +241,7 @@
 
         // ================= ระบบด่าน =================
         function loadMission(index) {
+            isChecking = false; // รีเซ็ตสถานะทุกครั้งที่เริ่มข้อใหม่
             if (index >= missions.length) {
                 clearInterval(timerInterval);
                 document.getElementById('mission-view').style.display = 'none';
@@ -265,15 +269,20 @@
                 m.choices.forEach(w => bankDiv.innerHTML += `<div class="word-piece" onclick="playSound(\'click\'); fillSlot(this)">${w}</div>`);
                 bankDiv.style.display = 'flex';
                 btn.innerText = 'VERIFY EVIDENCE'; btn.style.display = 'block'; btn.disabled = false;
-                btn.onclick = () => { playSound('click'); checkFill(); };
+                
+                // แก้บั๊กปุ่ม VERIFY ด้วยการเอา onclick ไว้ใน HTML ตอนสร้างปุ่มด้านบน และจัดการในฟังก์ชันแยก
+                btn.onclick = function() {
+                    if(!isChecking) checkFill();
+                };
             } else if (m.type === 'choice') {
                 m.choices.forEach(c => contentDiv.innerHTML += `<button class="choice-btn" onclick="checkChoice(this, ${c.correct})">${c.text}</button>`);
             }
 
-            startTimer(); // เริ่มจับเวลาทุกครั้งที่โหลดข้อใหม่
+            startTimer(); 
         }
 
         function selectSlot(slot) {
+            if(isChecking) return;
             document.querySelectorAll('.drop-zone').forEach(el => el.classList.remove('active'));
             if (slot.classList.contains('filled')) {
                 const word = slot.innerText;
@@ -284,37 +293,81 @@
         }
 
         function fillSlot(piece) {
-            if (!activeSlot || piece.classList.contains('used')) return;
+            if (!activeSlot || piece.classList.contains('used') || isChecking) return;
             activeSlot.innerText = piece.innerText; activeSlot.classList.add('filled', 'used');
             activeSlot.classList.remove('active'); piece.classList.add('used'); activeSlot = null;
         }
 
+        // ================= แก้บั๊กฟังก์ชันตรวจคำตอบเติมคำ =================
         function checkFill() {
+            isChecking = true; // ล็อกไม่ให้กดย้ำ
+            playSound('click');
+            
             const slots = document.querySelectorAll('.drop-zone');
             let correct = 0;
+            
+            // เช็กว่าเติมครบทุกช่องหรือยัง
+            let allFilled = true;
             slots.forEach(slot => {
-                if (slot.innerText.trim() === slot.getAttribute('data-expected')) { slot.style.borderColor = '#00ff00'; correct++; }
-                else { slot.style.borderColor = '#ff5252'; }
+                if(!slot.classList.contains('filled')) allFilled = false;
             });
+            
             const msg = document.getElementById('mission-msg');
             const btn = document.getElementById('btn-action');
+            
+            if(!allFilled) {
+                msg.innerText = 'WARNING: เติมคำตอบให้ครบก่อน!'; msg.style.color = '#ffb300';
+                isChecking = false;
+                return;
+            }
+
+            slots.forEach(slot => {
+                if (slot.innerText.trim() === slot.getAttribute('data-expected')) { 
+                    slot.style.borderColor = '#00ff00'; correct++; 
+                } else { 
+                    slot.style.borderColor = '#ff5252'; 
+                }
+            });
+            
             if (correct === slots.length) {
-                clearInterval(timerInterval); // หยุดเวลาถ้าตอบถูก
+                clearInterval(timerInterval);
                 playSound('correct');
                 msg.innerText = 'ACCESS GRANTED!'; msg.style.color = '#00ff00';
-                btn.innerText = 'PROCEED'; btn.onclick = () => { playSound('click'); currentIndex++; loadMission(currentIndex); };
+                btn.innerText = 'PROCEED (ไปข้อถัดไป)';
+                document.querySelectorAll('.word-piece, .drop-zone').forEach(el => el.style.pointerEvents = 'none');
+                
+                btn.onclick = () => { playSound('click'); currentIndex++; loadMission(currentIndex); };
             } else { 
                 playSound('wrong');
                 msg.innerText = 'ERROR: ไม่ถูกต้อง (-5 วินาที)'; msg.style.color = '#ff5252'; 
-                timeLeft -= 5; // หักเวลา 5 วิ เป็นบทลงโทษ!
+                timeLeft -= 5;
+                if(timeLeft < 0) timeLeft = 0;
                 updateTimerUI();
+                
+                // คืนค่ากลับให้ตอบใหม่
+                setTimeout(() => {
+                    msg.innerText = '';
+                    slots.forEach(slot => {
+                        slot.style.borderColor = '#00ff00';
+                        const word = slot.innerText;
+                        document.querySelectorAll('.word-piece').forEach(p => { if (p.innerText === word && p.classList.contains('used')) p.classList.remove('used'); });
+                        slot.innerText = ''; slot.classList.remove('filled');
+                    });
+                    isChecking = false;
+                    
+                    if(timeLeft <= 0) handleTimeOut();
+                }, 1000);
             }
         }
 
         function checkChoice(btn, isCorrect) {
-            clearInterval(timerInterval); // หยุดเวลา
+            if(isChecking) return;
+            isChecking = true;
+            clearInterval(timerInterval); 
+            
             document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
             const msg = document.getElementById('mission-msg');
+            
             if (isCorrect) {
                 playSound('correct');
                 btn.classList.add('correct'); msg.innerText = 'CORRECT!'; msg.style.color = '#00ff00';
@@ -323,7 +376,7 @@
                 playSound('wrong');
                 btn.classList.add('wrong'); msg.innerText = 'ERROR!'; msg.style.color = '#ff5252';
                 setTimeout(() => { 
-                    currentIndex++; // ผิดแล้วข้ามข้อเลย (เพราะกดตัวเลือกแล้วแก้ไม่ได้)
+                    currentIndex++; 
                     loadMission(currentIndex); 
                 }, 1500);
             }
