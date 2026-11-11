@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASE 02: Identify the Target</title>
+    <style>
+        body { 
+            background-color: #0b0b0b; color: #00ff00; font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px; min-height: 100vh;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px); 
+            background-size: 20px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none;
+        }
+        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; background: rgba(15, 15, 15, 0.95); border: 2px solid #00ff00; padding: 25px; box-shadow: 0 0 30px rgba(0,255,0,0.2); }
+        
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #00ff00; padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { margin: 0; color: #00ff00; font-size: 20px; text-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        .btn-abort { background: #222; color: #ff5252; border: 1px solid #ff5252; padding: 8px 15px; cursor: pointer; font-family: inherit; transition: 0.2s; }
+        .btn-abort:hover { background: #ff5252; color: #000; box-shadow: 0 0 10px rgba(255,82,82,0.6); }
+        
+        .progress-container { width: 100%; background: #050505; height: 12px; margin-bottom: 25px; border-radius: 2px; border: 1px solid #333; }
+        .progress-bar { height: 100%; background: #00ff00; width: 0%; transition: 0.3s; box-shadow: 0 0 10px rgba(0,255,0,0.6); }
+        
+        .mission-title { color: #ffeb3b; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #ffeb3b; padding-left: 10px; text-shadow: 0 0 5px rgba(255,235,59,0.5); }
+        .instruction { color: #aaa; font-size: 14px; margin-bottom: 20px; font-family: 'Arial', sans-serif; line-height: 1.5; }
+
+        .case-file { background: #0a0a0a; border: 1px solid #444; padding: 20px; font-family: 'Arial', sans-serif; font-size: 18px; line-height: 2; margin-bottom: 20px; color: #fff; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+        .drop-zone { display: inline-block; min-width: 90px; height: 30px; padding: 0 10px; background: #000; border: 2px dashed #00ff00; text-align: center; vertical-align: middle; font-weight: bold; color: #ffeb3b; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .drop-zone.filled { border-style: solid; background: rgba(0,255,0,0.1); box-shadow: 0 0 10px rgba(0,255,0,0.3); }
+        
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; background: #050505; padding: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        .word-piece { background: #111; color: #00ff00; border: 1px solid #00ff00; padding: 10px 20px; font-weight: bold; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; border-radius: 4px; transition: 0.2s; }
+        .word-piece:hover { background: #00ff00; color: #000; }
+        .word-piece.used { opacity: 0.2; pointer-events: none; }
+
+        .choice-btn { display: block; width: 100%; background: #0a0a0a; border: 1px solid #00ff00; color: #00ff00; padding: 16px; margin-bottom: 12px; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; text-align: left; transition: 0.2s; border-radius: 4px; }
+        .choice-btn:hover { background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 10px rgba(0,255,0,0.3); transform: translateX(5px); }
+        .choice-btn.correct { background: #00aa00; color: #fff; border-color: #00ff00; transform: translateX(0); }
+        .choice-btn.wrong { background: rgba(255,82,82,0.2); color: #ff5252; border-color: #ff5252; transform: translateX(0); }
+
+        .btn-action { display: block; width: 100%; background: #00ff00; color: #000; border: none; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 15px; transition: 0.2s; }
+        .btn-action:hover { background: #00cc00; box-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .btn-action:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
+
+        .result-box { text-align: center; padding: 40px 20px; display: none; }
+        .result-box h2 { color: #00ff00; font-size: 32px; text-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .exp-reward { font-size: 45px; color: #ffeb3b; margin: 20px 0; text-shadow: 0 0 20px rgba(255,235,59,0.6); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>CASE 02: IDENTIFY THE TARGET</h1>
+            <button class="btn-abort" onclick="playSound('click'); window.location.href='index.html'">◀ ABORT</button>
+        </header>
+
+        <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+
+        <div id="mission-view">
+            <div id="mission-title" class="mission-title"></div>
+            <div id="mission-instruction" class="instruction"></div>
+            <div id="mission-content"></div>
+            <div id="word-bank" class="word-bank" style="display:none;"></div>
+            <button id="btn-action" class="btn-action" style="display:none;"></button>
+            <div id="mission-msg" style="text-align:center; margin-top:15px; font-weight:bold; min-height:20px; font-size:18px;"></div>
+        </div>
+
+        <div id="result-view" class="result-box">
+            <h2>CASE 02 CLEARED!</h2>
+            <p style="color:#aaa;">คุณถอดรหัส Relative Clauses สำเร็จทั้งหมด 10 ภารกิจ!</p>
+            <div class="exp-reward">+150 EXP & 1 🎟️ ตั๋วสุ่ม!</div>
+            <button id="btn-save" class="btn-action" onclick="saveAndReturn()" style="background:#00aa00; color:#fff;">SAVE & RETURN TO AGENCY</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= ⚠️ ใส่ Web App URL ที่นี่ =================
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+
+        // ================= ระบบเสียง FX =================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            let now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.setValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'clear') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2); osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            }
+        }
+
+        // ================= ฐานข้อมูลด่าน Case 2 =================
+        const missions = [
+            { type: 'choice', title: 'ดักจับหุ่นยนต์แปลภาษา 1', instruction: 'ประโยคต้นฉบับ: <b>"The man who stole my car was caught."</b><br>เลือกคำแปลที่ถูกต้องเป็นธรรมชาติที่สุด (ห้ามแปลว่า ผู้ซึ่ง)', choices: [{ text: 'A. ผู้ชายผู้ซึ่งขโมยรถของฉันถูกจับแล้ว', correct: false }, { text: 'B. ผู้ชายที่ขโมยรถของฉันถูกจับแล้ว', correct: true }, { text: 'C. ชายอันซึ่งขโมยรถยนต์โดนจับกุม', correct: false }] },
+            { type: 'choice', title: 'ดักจับหุ่นยนต์แปลภาษา 2', instruction: 'ประโยคต้นฉบับ: <b>"This is the house where I grew up."</b><br>วิธีการแปล Where ในภาษาไทยที่ลื่นไหลที่สุดคืออะไร?', choices: [{ text: 'A. นี่คือบ้านซึ่งเป็นสถานที่ที่ฉันเติบโตขึ้นมา', correct: false }, { text: 'B. นี่คือบ้านที่ฉันเติบโตมา', correct: true }, { text: 'C. นี่คือบ้านที่ซึ่งฉันโตขึ้น', correct: false }] },
+            { type: 'fill', title: 'ปะติดปะต่อเบาะแส (ที่ / ซึ่ง)', instruction: 'เติมคำเชื่อมขยายคำนามให้เหมาะสม', sentence: 'บริษัทของเราจ้างพนักงานใหม่ 20 คน, {slot:ซึ่ง} ถือเป็นสถิติสูงสุดในปีนี้', choices: ['ที่', 'ซึ่ง', 'อัน', 'ผู้'] },
+            { type: 'choice', title: 'เทคนิคมือโปร (Back-to-Front)', instruction: 'ประโยคขยายยาว: <b>"The documents that were hidden in the safe..."</b><br>ควรเริ่มต้นแปลจากส่วนไหนก่อน?', choices: [{ text: 'A. แปลคำว่า The documents ก่อน แล้วค่อยแปลส่วนที่ซ่อน', correct: false }, { text: 'B. แปลจากหลังไปหน้า (เอาส่วนที่ซ่อนในตู้เซฟ มาขยายเอกสาร)', correct: true }, { text: 'C. แปลคำต่อคำจากซ้ายไปขวาตามลำดับเป๊ะๆ', correct: false }] },
+            { type: 'fill', title: 'ถอดรหัสประโยคตัวต้องสงสัย', instruction: 'เติมคำเชื่อมในช่องว่าง', sentence: 'สายลับ {slot:ที่} สวมเสื้อแจ็คเก็ตสีดำกำลังเดินมาทางนี้', choices: ['ที่', 'ซึ่ง', 'อัน', 'ผู้'] },
+            { type: 'choice', title: 'แยกแยะการใช้ "ซึ่ง"', instruction: 'กรณีใดเหมาะสมที่สุดที่จะใช้คำว่า <b>"ซึ่ง"</b> แทนคำว่า "ที่"?', choices: [{ text: 'A. เมื่อต้องการขยายคำนามสั้นๆ ทั่วไป เช่น แมวตัวที่นอน', correct: false }, { text: 'B. เมื่อประโยคขยายมีความยาวมาก หรือขยายความทั้งประโยคข้างหน้า', correct: true }, { text: 'C. เมื่อต้องการพูดคุยกับเพื่อนสนิทในชีวิตประจำวัน', correct: false }] },
+            { type: 'fill', title: 'ถอดรหัสเบาะแสสถานที่ (Where)', instruction: 'เติมคำบุพบท/สรรพนามบอกสถานที่', sentence: 'ร้านกาแฟ {slot:ที่} เรานัดพบกันเมื่อวานถูกปิดตัวลงแล้ว', choices: ['ที่', 'ซึ่ง', 'อัน', 'ในที่ซึ่ง'] },
+            { type: 'choice', title: 'ทดสอบความลื่นไหล', instruction: 'ประโยคไหนคือผลงานการแปล <b>Relative Clause</b> ของนักแปลมืออาชีพ?', choices: [{ text: 'A. กุญแจอันซึ่งวางอยู่บนโต๊ะคืออันที่ฉันหา', correct: false }, { text: 'B. กุญแจที่วางอยู่บนโต๊ะคือกุญแจของฉัน', correct: true }, { text: 'C. กุญแจผู้ซึ่งวางบนโต๊ะคือของฉันเอง', correct: false }] },
+            { type: 'fill', title: 'เติมเต็มรหัสลับบทที่ 2', instruction: 'เติมคำเชื่อมประโยคขยาย', sentence: 'เอกสารลับ {slot:ที่} คุณตำรวจต้องการถูกพบอยู่ในลิ้นชัก', choices: ['ที่', 'ซึ่ง', 'อัน', 'ผู้'] },
+            { type: 'choice', title: 'บททดสอบสุดท้าย Unit 2', instruction: 'ข้อใดคือหลักการสำคัญที่สุดในการแปล Relative Clauses?', choices: [{ text: 'A. ต้องแปลคำว่า who/which ทุกคำไม่ให้ตกหล่น', correct: false }, { text: 'B. ใช้คำว่า "ที่" รวบประโยคให้กระชับ และแปลจากหลังมาหน้าหากประโยคยาว', correct: true }, { text: 'C. แปลเป็นภาษาทางการและใช้คำว่า "อันซึ่ง" เสมอ', correct: false }] }
+        ];
+
+        let currentIndex = 0;
+        let activeSlot = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const agentData = JSON.parse(localStorage.getItem('agentData'));
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            if (parseInt(agentData.currentCase) < 2) { alert("ACCESS DENIED"); window.location.href = 'index.html'; return; }
+            if (parseInt(agentData.currentCase) > 2) { alert("ALREADY CLEARED!"); window.location.href = 'index.html'; return; }
+            loadMission(currentIndex);
+        });
+
+        function loadMission(index) {
+            if (index >= missions.length) {
+                document.getElementById('mission-view').style.display = 'none';
+                document.getElementById('result-view').style.display = 'block';
+                playSound('clear');
+                return;
+            }
+            const m = missions[index];
+            const contentDiv = document.getElementById('mission-content');
+            const bankDiv = document.getElementById('word-bank');
+            const btn = document.getElementById('btn-action');
+            const msg = document.getElementById('mission-msg');
+
+            document.getElementById('progress-bar').style.width = ((index / missions.length) * 100) + "%";
+            document.getElementById('mission-title').innerText = `MISSION ${index+1}/${missions.length}: ${m.title}`;
+            document.getElementById('mission-instruction').innerHTML = m.instruction;
+            contentDiv.innerHTML = ''; bankDiv.innerHTML = '';
+            bankDiv.style.display = 'none'; btn.style.display = 'none'; msg.innerText = '';
+            activeSlot = null;
+
+            if (m.type === 'fill') {
+                let html = m.sentence.replace(/{slot:(.*?)}/g, '<span class="drop-zone" onclick="playSound(\'click\'); selectSlot(this)" data-expected="$1"></span>');
+                contentDiv.innerHTML = `<div class="case-file">${html}</div>`;
+                m.choices.forEach(w => bankDiv.innerHTML += `<div class="word-piece" onclick="playSound(\'click\'); fillSlot(this)">${w}</div>`);
+                bankDiv.style.display = 'flex';
+                btn.innerText = 'VERIFY EVIDENCE'; btn.style.display = 'block'; btn.disabled = false;
+                btn.onclick = () => { playSound('click'); checkFill(); };
+            } else if (m.type === 'choice') {
+                m.choices.forEach(c => contentDiv.innerHTML += `<button class="choice-btn" onclick="checkChoice(this, ${c.correct})">${c.text}</button>`);
+            }
+        }
+
+        function selectSlot(slot) {
+            document.querySelectorAll('.drop-zone').forEach(el => el.classList.remove('active'));
+            if (slot.classList.contains('filled')) {
+                const word = slot.innerText;
+                document.querySelectorAll('.word-piece').forEach(p => { if (p.innerText === word && p.classList.contains('used')) p.classList.remove('used'); });
+                slot.innerText = ''; slot.classList.remove('filled');
+            }
+            activeSlot = slot; activeSlot.classList.add('active');
+        }
+
+        function fillSlot(piece) {
+            if (!activeSlot || piece.classList.contains('used')) return;
+            activeSlot.innerText = piece.innerText; activeSlot.classList.add('filled', 'used');
+            activeSlot.classList.remove('active'); piece.classList.add('used'); activeSlot = null;
+        }
+
+        function checkFill() {
+            const slots = document.querySelectorAll('.drop-zone');
+            let correct = 0;
+            slots.forEach(slot => {
+                if (slot.innerText.trim() === slot.getAttribute('data-expected')) { slot.style.borderColor = '#00ff00'; correct++; }
+                else { slot.style.borderColor = '#ff5252'; }
+            });
+            const msg = document.getElementById('mission-msg');
+            const btn = document.getElementById('btn-action');
+            if (correct === slots.length) {
+                playSound('correct');
+                msg.innerText = 'ACCESS GRANTED!'; msg.style.color = '#00ff00';
+                btn.innerText = 'PROCEED'; btn.onclick = () => { playSound('click'); currentIndex++; loadMission(currentIndex); };
+            } else { 
+                playSound('wrong');
+                msg.innerText = 'ERROR: ไม่ถูกต้อง'; msg.style.color = '#ff5252'; 
+            }
+        }
+
+        function checkChoice(btn, isCorrect) {
+            document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+            const msg = document.getElementById('mission-msg');
+            if (isCorrect) {
+                playSound('correct');
+                btn.classList.add('correct'); msg.innerText = 'CORRECT!'; msg.style.color = '#00ff00';
+                setTimeout(() => { currentIndex++; loadMission(currentIndex); }, 1000);
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong'); msg.innerText = 'ERROR!'; msg.style.color = '#ff5252';
+                setTimeout(() => { document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'auto'); btn.classList.remove('wrong'); msg.innerText = ''; }, 1000);
+            }
+        }
+
+        async function saveAndReturn() {
+            const agentData = JSON.parse(localStorage.getItem('agentData'));
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "UPLOADING... ⏳"; btn.disabled = true;
+            try {
+                // ผ่านด่าน 2 ได้ 150 EXP, 10 คะแนน, ตั๋ว 1 ใบ
+                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=2&expGain=150&score=10&ticketGain=1`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // ซิงค์ข้อมูลกับเซิร์ฟเวอร์
+                    agentData.exp = parseInt(result.newExp);
+                    agentData.rank = result.newRank;
+                    agentData.tickets = parseInt(result.newTickets);
+                    agentData.currentCase = 3; // ปลดล็อก Case 3
+                    
+                    localStorage.setItem('agentData', JSON.stringify(agentData));
+                    playSound('success');
+                    alert("MISSION COMPLETE! ข้อมูลถูกบันทึกลงระบบแล้ว");
+                    window.location.href = 'index.html';
+                } else {
+                    playSound('error'); alert("ERROR: " + result.message);
+                    btn.innerText = "SAVE & RETURN TO AGENCY"; btn.disabled = false;
+                }
+            } catch (e) { 
+                playSound('error'); alert("CONNECTION ERROR: บันทึกข้อมูลไม่สำเร็จ"); 
+                btn.innerText = "SAVE & RETURN TO AGENCY"; btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
