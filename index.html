@@ -13,7 +13,6 @@
             background-size: 20px 20px; overflow-x: hidden;
         }
 
-        /* เอฟเฟกต์เส้นหน้าจอทีวีเก่า (CRT Effect) */
         body::before {
             content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
@@ -30,7 +29,7 @@
         .status-dot.online { background-color: #00ff00; box-shadow: 0 0 8px #00ff00; }
         .status-dot.offline { background-color: #ff5252; box-shadow: 0 0 8px #ff5252; }
 
-        /* หน้า Login (Vault) */
+        /* หน้า Login */
         .vault-box { background: rgba(10, 10, 10, 0.95); padding: 35px; border: 2px solid #d32f2f; box-shadow: 0 0 25px rgba(211,47,47,0.4); text-align: center; width: 100%; max-width: 350px; margin: 0 auto; }
         .vault-box h2 { color: #d32f2f; letter-spacing: 4px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(211,47,47,0.6); }
         .subtitle { font-size: 11px; color: #888; margin-bottom: 25px; letter-spacing: 2px; }
@@ -41,10 +40,8 @@
         .toggle-password { position: absolute; right: 10px; top: 32px; font-size: 11px; color: #888; cursor: pointer; user-select: none; }
         .toggle-password:hover { color: #fff; }
         .input-group input:focus { outline: none; border-color: #00ff00; box-shadow: 0 0 8px rgba(0,255,0,0.4); }
-        
         .btn-main { background: #d32f2f; color: white; border: 2px solid #ff5252; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; font-family: inherit; letter-spacing: 2px; margin-top: 10px; transition: 0.1s; }
         .btn-main:hover { background: #b71c1c; box-shadow: 0 0 15px rgba(211,47,47,0.8); transform: translateY(-2px); }
-        .btn-main:active { transform: translateY(1px); }
         .btn-main:disabled { background: #333; border-color: #444; color: #777; cursor: not-allowed; }
         .message { margin-top: 15px; font-size: 12px; min-height: 20px; }
 
@@ -71,32 +68,37 @@
         .item-icon { font-size: 26px; margin-bottom: 3px; }
         .item-count { color: #00ff00; font-weight: bold; font-size: 14px; }
         .item-name { font-size: 11px; color: #888; }
-        
-        .btn-gacha { background: #ffb300; color: #000; border: 2px solid #ffe57f; padding: 12px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: 0.1s; text-shadow: none; font-size: 14px; }
+        .btn-gacha { background: #ffb300; color: #000; border: 2px solid #ffe57f; padding: 12px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: 0.1s; font-size: 14px; }
         .btn-gacha:hover { background: #ffd54f; box-shadow: 0 0 15px rgba(255,179,0,0.6); transform: translateY(-1px); }
 
+        /* ================= โซนแฟ้มสรุปความรู้ (สร้างใหม่แยกต่างหาก) ================= */
+        .archive-panel { border: 1px solid #333; padding: 15px; background: #050505; margin-bottom: 20px; }
+        .archive-panel h3 { margin-top: 0; color: #00bfff; font-size: 16px; letter-spacing: 1px; text-align: center; margin-bottom: 15px; }
+        .archive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 600px) { .archive-grid { grid-template-columns: 1fr; } }
+        .btn-archive { background: #111; border: 1px dashed #00bfff; color: #00bfff; padding: 12px; cursor: pointer; border-radius: 4px; font-size: 12px; font-family: inherit; font-weight: bold; transition: 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-archive:hover { background: #00bfff; color: #000; box-shadow: 0 0 12px rgba(0,191,255,0.6); }
+
+        /* ================= โซนด่านสืบสวน ================= */
         .mission-board { border: 1px solid #333; padding: 15px; background: #050505; }
         .mission-board h3 { margin-top: 0; color: #00ff00; font-size: 16px; letter-spacing: 1px; text-align: center; margin-bottom: 15px; }
         .case-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         @media (max-width: 600px) { .case-list { grid-template-columns: 1fr; } }
         
-        .case-card { border: 1px solid #222; padding: 12px; background: #0d0d0d; position: relative; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+        .case-card { border: 1px solid #222; padding: 15px; background: #0d0d0d; position: relative; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
         .case-card:hover:not(.locked) { transform: translateY(-3px); border-color: #00ff00; box-shadow: 0 0 12px rgba(0,255,0,0.3); }
         .case-card.locked { opacity: 0.4; cursor: not-allowed; }
         .case-card.locked::after { content: "🔒 LOCKED"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 4px 8px; color: #ff5252; font-weight: bold; border: 1px solid #ff5252; font-size: 11px; }
         .case-title { font-weight: bold; color: #fff; margin-bottom: 4px; font-size: 13px; }
         .case-desc { font-size: 11px; color: #777; }
         .case-status { margin-top: 8px; font-size: 11px; color: #00ff00; text-align: right; }
-        
-        .btn-summary { background: #111; border: 1px solid #00ff00; color: #00ff00; padding: 5px; cursor: pointer; border-radius: 2px; font-size: 11px; margin-top: 8px; width: 100%; font-family: inherit; font-weight: bold; transition: 0.1s; display: none; }
-        .btn-summary:hover { background: #00ff00; color: #000; box-shadow: 0 0 8px rgba(0,255,0,0.6); }
 
         /* Modal สรุปเนื้อหา */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
-        .modal-content { background-color: #0a0a0a; padding: 25px; border: 2px solid #00ff00; width: 90%; max-width: 600px; position: relative; box-shadow: 0 0 25px rgba(0,255,0,0.4); }
+        .modal-content { background-color: #0a0a0a; padding: 25px; border: 2px solid #00bfff; width: 90%; max-width: 600px; position: relative; box-shadow: 0 0 25px rgba(0,191,255,0.4); }
         .close-btn { color: #888; position: absolute; right: 15px; top: 10px; font-size: 26px; font-weight: bold; cursor: pointer; }
         .close-btn:hover { color: #ff5252; }
-        #summary-title { color: #00ff00; margin-top: 0; border-bottom: 1px dashed #333; padding-bottom: 8px; font-size: 16px; }
+        #summary-title { color: #00bfff; margin-top: 0; border-bottom: 1px dashed #333; padding-bottom: 8px; font-size: 16px; }
         #summary-body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #ccc; max-height: 60vh; overflow-y: auto; padding-right: 10px; font-size: 13px; }
         #summary-body h4 { color: #ffeb3b; margin-bottom: 5px; margin-top: 15px; }
         #summary-body ul { padding-left: 20px; margin-top: 5px; }
@@ -138,9 +140,7 @@
             </header>
 
             <div class="profile-panel">
-                <div class="avatar-box" id="avatar-box">
-                    <!-- สกินและกรอบจะถูกโหลดมาซ้อนกันที่นี่ด้วย JavaScript -->
-                </div>
+                <div class="avatar-box" id="avatar-box"></div>
                 <div class="agent-info">
                     <h2>AGENT <span id="display-name">UNKNOWN</span></h2>
                     <div class="stat-line"><span class="stat-label">RANK:</span> <span class="stat-value" id="display-rank">---</span></div>
@@ -158,8 +158,18 @@
                     <div class="item"><div class="item-icon">⏳</div><div class="item-count" id="item-time">0</div><div class="item-name">นาฬิกาทราย</div></div>
                     <div class="item"><div class="item-icon">📁</div><div class="item-count" id="item-file">0</div><div class="item-name">แฟ้มลับ</div></div>
                 </div>
-                <!-- ปุ่มเข้าตู้กาชา -->
                 <button class="btn-gacha" onclick="playSound('click'); window.location.href='gacha.html'">🎰 เข้าสู่ห้องสุ่มตู้กาชา (GACHA VAULT)</button>
+            </div>
+
+            <!-- ================= หมวดหมู่แฟ้มความรู้ (ใหม่) ================= -->
+            <div class="archive-panel">
+                <h3>📚 AGENCY ARCHIVES (แฟ้มสรุปความรู้)</h3>
+                <div class="archive-grid">
+                    <button class="btn-archive" onclick="playSound('click'); showSummary(1)">📖 Unit 1: Conjunctions</button>
+                    <button class="btn-archive" onclick="playSound('click'); showSummary(2)">📖 Unit 2: Relative Clauses</button>
+                    <button class="btn-archive" onclick="playSound('click'); showSummary(3)">📖 Unit 3: Passive Voice</button>
+                    <button class="btn-archive" onclick="playSound('click'); showSummary(4)">📖 Unit 4: Sense-for-Sense</button>
+                </div>
             </div>
 
             <div class="mission-board">
@@ -170,10 +180,7 @@
                             <div class="case-title">CASE 01: The Broken Story</div>
                             <div class="case-desc">Unit 1: Translating Conjunctions</div>
                         </div>
-                        <div>
-                            <div class="case-status">STATUS: <span id="status-1">OPEN</span></div>
-                            <button id="btn-sum-1" class="btn-summary" onclick="playSound('click'); showSummary(1, event)">📖 เปิดแฟ้มสรุปเนื้อหา (Unit 1)</button>
-                        </div>
+                        <div class="case-status">STATUS: <span id="status-1">OPEN</span></div>
                     </div>
                     
                     <div class="case-card" id="case-2" onclick="playSound('click'); startMission(2)">
@@ -181,10 +188,7 @@
                             <div class="case-title">CASE 02: Identify the Target</div>
                             <div class="case-desc">Unit 2: Relative Clauses</div>
                         </div>
-                        <div>
-                            <div class="case-status">STATUS: <span id="status-2">LOCKED</span></div>
-                            <button id="btn-sum-2" class="btn-summary" onclick="playSound('click'); showSummary(2, event)">📖 เปิดแฟ้มสรุปเนื้อหา (Unit 2)</button>
-                        </div>
+                        <div class="case-status">STATUS: <span id="status-2">LOCKED</span></div>
                     </div>
 
                     <div class="case-card" id="case-3" onclick="playSound('click'); startMission(3)">
@@ -192,10 +196,7 @@
                             <div class="case-title">CASE 03: Crime Scene Inv.</div>
                             <div class="case-desc">Unit 3: Passive Voice</div>
                         </div>
-                        <div>
-                            <div class="case-status">STATUS: <span id="status-3">LOCKED</span></div>
-                            <button id="btn-sum-3" class="btn-summary" onclick="playSound('click'); showSummary(3, event)">📖 เปิดแฟ้มสรุปเนื้อหา (Unit 3)</button>
-                        </div>
+                        <div class="case-status">STATUS: <span id="status-3">LOCKED</span></div>
                     </div>
 
                     <div class="case-card" id="case-4" onclick="playSound('click'); startMission(4)">
@@ -203,10 +204,7 @@
                             <div class="case-title">CASE 04: The Secret Code</div>
                             <div class="case-desc">Unit 4: Sense-for-Sense</div>
                         </div>
-                        <div>
-                            <div class="case-status">STATUS: <span id="status-4">LOCKED</span></div>
-                            <button id="btn-sum-4" class="btn-summary" onclick="playSound('click'); showSummary(4, event)">📖 เปิดแฟ้มสรุปเนื้อหา (Unit 4)</button>
-                        </div>
+                        <div class="case-status">STATUS: <span id="status-4">LOCKED</span></div>
                     </div>
                 </div>
             </div>
@@ -226,16 +224,14 @@
         // ================= ⚠️ ใส่ Web App URL ของคุณครูที่นี่ =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
 
-        // ================= ระบบสร้างเสียงเอฟเฟกต์เร트로 (Sound FX Engine) =================
+        // ================= ระบบสร้างเสียงเอฟเฟกต์เร트로 =================
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (!audioCtx) return;
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            
             let now = audioCtx.currentTime;
             if (type === 'click') {
                 osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
@@ -315,22 +311,20 @@
             document.getElementById('display-rank').innerText = data.rank || "Rookie Agent";
             document.getElementById('display-exp').innerText = data.exp || 0;
             
-            // ================= โชว์ Avatar & Frame ซ้อนกัน =================
             const avatarBox = document.getElementById('avatar-box');
             avatarBox.innerHTML = ''; 
             
-            // 1. ถ้ามีรูปสกิน
+            // สกินพื้นหลัง
             if (data.avatarId && data.avatarId.trim() !== "") {
                 avatarBox.innerHTML += `<img src="avatars/${data.avatarId.trim()}" style="position: absolute; width:100%; height:100%; object-fit:cover; z-index: 1;">`;
             } else {
                 avatarBox.innerHTML += `<span style="position: absolute; color: #555; font-weight: bold; font-size: 10px; z-index: 1;">[ROOKIE<br>SKIN]</span>`;
             }
 
-            // 2. ถ้ามีรูปกรอบ (เอามาทับข้างหน้า)
+            // กรอบรูปด้านหน้า
             if (data.frameId && data.frameId.trim() !== "") {
                 const frameName = data.frameId.trim();
                 avatarBox.innerHTML += `<img src="avatars/${frameName}" style="position: absolute; width:120%; height:120%; object-fit:contain; z-index: 2; pointer-events: none;">`;
-                
                 if (frameName.toLowerCase().match(/elite|gold|cyber|platinum/)) {
                     avatarBox.classList.add('premium');
                 } else {
@@ -339,7 +333,6 @@
             } else {
                 avatarBox.classList.remove('premium');
             }
-            // =========================================================
 
             document.getElementById('item-hint').innerText = data.itemHint || 0;
             document.getElementById('item-time').innerText = data.itemTime || 0;
@@ -348,22 +341,19 @@
 
             const currentCase = parseInt(data.currentCase) || 1;
             
+            // อัปเดตสถานะของเคส
             for (let i = 1; i <= 4; i++) {
                 const caseCard = document.getElementById(`case-${i}`);
                 const caseStatus = document.getElementById(`status-${i}`);
-                const btnSum = document.getElementById(`btn-sum-${i}`);
                 
                 if (i > currentCase) {
                     caseCard.classList.add('locked'); caseStatus.innerText = 'LOCKED';
-                    btnSum.style.display = 'none';
                 } else if (i < currentCase) {
                     caseStatus.innerText = 'CLEARED'; caseStatus.style.color = '#888';
                     caseCard.classList.remove('locked');
-                    btnSum.style.display = 'block';
                 } else {
                     caseStatus.innerText = 'OPEN'; caseStatus.style.color = '#00ff00';
                     caseCard.classList.remove('locked');
-                    btnSum.style.display = 'none';
                 }
             }
         }
@@ -378,14 +368,13 @@
                 return;
             } else if (caseNumber < currentCase) {
                 playSound('error');
-                alert("ALREADY CLEARED: คุณทำคดีนี้สำเร็จไปแล้ว ไม่สามารถทำภารกิจซ้ำได้!");
+                alert("ALREADY CLEARED: คุณทำคดีนี้สำเร็จไปแล้ว ไม่สามารถทำภารกิจซ้ำได้! (สามารถทบทวนสรุปเนื้อหาได้ที่แฟ้มด้านบน)");
                 return;
             }
             window.location.href = `case${caseNumber}.html`;
         }
 
-        function showSummary(caseNum, event) {
-            event.stopPropagation();
+        function showSummary(caseNum) {
             playSound('success');
             document.getElementById('summary-title').innerText = `📑 CASE 0${caseNum} SUMMARY`;
             document.getElementById('summary-body').innerHTML = lessonSummaries[caseNum] || "กำลังรวบรวมเบาะแส...";
@@ -405,3 +394,4 @@
     </script>
 </body>
 </html>
+```eof
