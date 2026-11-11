@@ -5,49 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CASE 01: The Broken Story</title>
     <style>
-        /* ================= CSS ธีมโต๊ะนักสืบ ================= */
-        body { background-color: #2a2a2a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; min-height: 100vh; background-image: radial-gradient(circle, #333 1px, transparent 1px); background-size: 10px 10px; }
-        .container { max-width: 800px; margin: 0 auto; background: #1a1a1a; border: 2px solid #555; padding: 20px; box-shadow: 10px 10px 0px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #888; padding-bottom: 10px; margin-bottom: 15px; }
-        header h1 { margin: 0; color: #d32f2f; font-size: 20px; }
-        .btn-abort { background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; font-family: inherit; }
-        .btn-abort:hover { background: #d32f2f; }
+        body { 
+            background-color: #0b0b0b; color: #00ff00; font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px; min-height: 100vh;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px); 
+            background-size: 20px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none;
+        }
+        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; background: rgba(15, 15, 15, 0.95); border: 2px solid #00ff00; padding: 25px; box-shadow: 0 0 30px rgba(0,255,0,0.2); }
         
-        .progress-container { width: 100%; background: #333; height: 10px; margin-bottom: 20px; border-radius: 5px; }
-        .progress-bar { height: 100%; background: #00ff00; width: 0%; transition: 0.3s; border-radius: 5px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #00ff00; padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { margin: 0; color: #00ff00; font-size: 20px; text-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        .btn-abort { background: #222; color: #ff5252; border: 1px solid #ff5252; padding: 8px 15px; cursor: pointer; font-family: inherit; transition: 0.2s; }
+        .btn-abort:hover { background: #ff5252; color: #000; box-shadow: 0 0 10px rgba(255,82,82,0.6); }
         
-        .mission-title { color: #aaa; font-size: 14px; margin-bottom: 15px; border-left: 3px solid #00ff00; padding-left: 10px; }
-        .instruction { color: #888; font-size: 13px; margin-bottom: 15px; font-family: 'Arial'; }
-
-        /* Dynamic Content Styles */
-        .case-file { background: #e0c9a3; color: #333; padding: 25px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); font-family: 'Arial', sans-serif; font-size: 16px; line-height: 2; margin-bottom: 20px; }
-        .drop-zone { display: inline-block; min-width: 70px; height: 25px; padding: 0 5px; background: rgba(255,255,255,0.5); border: 2px dashed #888; text-align: center; vertical-align: middle; font-weight: bold; color: #d32f2f; cursor: pointer; transition: 0.2s; font-size: 14px;}
-        .drop-zone.active { border-color: #d32f2f; background: #ffebee; box-shadow: 0 0 5px #d32f2f; }
-        .drop-zone.filled { background: #fff; border: 2px solid #333; color: #333; }
-        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; background: #111; padding: 15px; border: 1px solid #444; }
-        .word-piece { background: #f4e8d1; color: #333; padding: 8px 15px; border: 1px solid #999; font-weight: bold; cursor: pointer; font-family: 'Arial'; }
-        .word-piece.used { opacity: 0.3; pointer-events: none; }
-
-        .suspect-sentence { background: #222; padding: 20px; font-size: 18px; text-align: center; font-family: 'Arial'; line-height: 2; border: 1px solid #555; margin-bottom: 20px;}
-        .clickable-word { background: #444; padding: 5px 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; display: inline-block; }
-        .clickable-word:hover { background: #d32f2f; }
-        .clickable-word.removed { text-decoration: line-through; color: #ff5252; background: transparent; pointer-events: none; }
-
-        .choice-btn { display: block; width: 100%; background: #222; border: 1px solid #00ff00; color: #00ff00; padding: 15px; margin-bottom: 10px; cursor: pointer; font-family: 'Arial'; font-size: 16px; text-align: left; transition: 0.2s; }
-        .choice-btn:hover { background: rgba(0, 255, 0, 0.1); }
-        .choice-btn.wrong { border-color: #ff5252; color: #ff5252; background: rgba(255, 82, 82, 0.1); }
-        .choice-btn.correct { border-color: #00ff00; color: #fff; background: #00aa00; }
-
-        .btn-action { display: block; width: 100%; background: #d32f2f; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; letter-spacing: 1px; }
-        .btn-action:hover { background: #b71c1c; }
-        .btn-action:disabled { background: #555; cursor: not-allowed; }
+        /* Progress & Timer */
+        .status-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .progress-container { width: 60%; background: #050505; height: 12px; border-radius: 2px; border: 1px solid #333; }
+        .progress-bar { height: 100%; background: #00ff00; width: 0%; transition: 0.3s; box-shadow: 0 0 10px rgba(0,255,0,0.6); }
         
+        .timer-container { width: 35%; text-align: right; font-size: 18px; font-weight: bold; color: #00bfff; text-shadow: 0 0 8px rgba(0,191,255,0.6); }
+        .timer-bar-bg { width: 100%; background: #222; height: 6px; margin-top: 5px; border-radius: 2px; overflow: hidden; }
+        .timer-bar { height: 100%; background: #00bfff; width: 100%; transition: width 1s linear, background-color 0.3s; }
+        
+        .btn-item { background: #ffb300; color: #000; border: 1px solid #ffe57f; padding: 5px 10px; font-size: 12px; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 5px; border-radius: 3px; display: none; }
+        .btn-item:hover { background: #ffd54f; }
+
+        .mission-title { color: #ffeb3b; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #ffeb3b; padding-left: 10px; text-shadow: 0 0 5px rgba(255,235,59,0.5); margin-top: 15px; }
+        .instruction { color: #aaa; font-size: 14px; margin-bottom: 20px; font-family: 'Arial', sans-serif; line-height: 1.5; }
+
+        .case-file { background: #0a0a0a; border: 1px solid #444; padding: 20px; font-family: 'Arial', sans-serif; font-size: 18px; line-height: 2; margin-bottom: 20px; color: #fff; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+        .drop-zone { display: inline-block; min-width: 90px; height: 30px; padding: 0 10px; background: #000; border: 2px dashed #00ff00; text-align: center; vertical-align: middle; font-weight: bold; color: #ffeb3b; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .drop-zone.filled { border-style: solid; background: rgba(0,255,0,0.1); box-shadow: 0 0 10px rgba(0,255,0,0.3); }
+        
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; background: #050505; padding: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        .word-piece { background: #111; color: #00ff00; border: 1px solid #00ff00; padding: 10px 20px; font-weight: bold; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; border-radius: 4px; transition: 0.2s; }
+        .word-piece:hover { background: #00ff00; color: #000; }
+        .word-piece.used { opacity: 0.2; pointer-events: none; }
+
+        .choice-btn { display: block; width: 100%; background: #0a0a0a; border: 1px solid #00ff00; color: #00ff00; padding: 16px; margin-bottom: 12px; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; text-align: left; transition: 0.2s; border-radius: 4px; }
+        .choice-btn:hover { background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 10px rgba(0,255,0,0.3); transform: translateX(5px); }
+        .choice-btn.correct { background: #00aa00; color: #fff; border-color: #00ff00; transform: translateX(0); }
+        .choice-btn.wrong { background: rgba(255,82,82,0.2); color: #ff5252; border-color: #ff5252; transform: translateX(0); }
+
+        .btn-action { display: block; width: 100%; background: #00ff00; color: #000; border: none; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 15px; transition: 0.2s; }
+        .btn-action:hover { background: #00cc00; box-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .btn-action:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
+
         .result-box { text-align: center; padding: 40px 20px; display: none; }
-        .result-box h2 { color: #00ff00; font-size: 30px; letter-spacing: 3px; }
-        .exp-reward { font-size: 50px; color: #ffeb3b; margin: 20px 0; text-shadow: 0 0 10px #ffeb3b; }
-        
-        #mission-view { animation: slideIn 0.4s; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .result-box h2 { color: #00ff00; font-size: 32px; text-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .exp-reward { font-size: 45px; color: #ffeb3b; margin: 20px 0; text-shadow: 0 0 20px rgba(255,235,59,0.6); }
     </style>
 </head>
 <body>
@@ -55,95 +66,192 @@
     <div class="container">
         <header>
             <h1>CASE 01: THE BROKEN STORY</h1>
-            <button class="btn-abort" onclick="goBack()">◀ ABORT</button>
+            <button class="btn-abort" onclick="playSound('click'); window.location.href='index.html'">◀ ABORT</button>
         </header>
 
-        <div class="progress-container" id="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
+        <div class="status-panel">
+            <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+            <div class="timer-container">
+                <div id="timer-text">TIME: 30s</div>
+                <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar"></div></div>
+                <button id="btn-use-time" class="btn-item" onclick="useTimeItem()">⏳ ใช้ 1 นาฬิกาทราย (+15s)</button>
+            </div>
         </div>
 
-        <!-- กล่องแสดงคำถามที่จะเปลี่ยนไปเรื่อยๆ -->
         <div id="mission-view">
             <div id="mission-title" class="mission-title"></div>
             <div id="mission-instruction" class="instruction"></div>
             <div id="mission-content"></div>
-            
             <div id="word-bank" class="word-bank" style="display:none;"></div>
-            
             <button id="btn-action" class="btn-action" style="display:none;"></button>
-            <div id="mission-msg" style="text-align:center; margin-top:15px; font-weight:bold; min-height: 20px;"></div>
+            <div id="mission-msg" style="text-align:center; margin-top:15px; font-weight:bold; min-height:20px; font-size:18px;"></div>
         </div>
 
-        <!-- ================= RESULT & GACHA ================= -->
         <div id="result-view" class="result-box">
-            <h2>MISSION CLEARED!</h2>
-            <p>คุณถอดรหัสศิลปะการเชื่อมประโยคสำเร็จทั้ง 15 ด่าน!</p>
-            <div class="exp-reward">+150 EXP</div>
-            
-            <!-- กล่องสุ่มไอเทม -->
-            <div id="gacha-box" style="margin: 30px 0; padding: 20px; background: #111; border: 2px dashed #8b0000; border-radius: 10px;">
-                <p style="color: #ffeb3b; margin-top: 0;">🎁 กดที่กระเป๋าเพื่อรับไอเทมสนับสนุน 🎁</p>
-                <div id="briefcase-icon" style="font-size: 60px; cursor: pointer; transition: 0.1s; user-select: none;" onclick="openGacha()">💼</div>
-                <div id="gacha-result" style="display: none; margin-top: 15px; font-size: 20px; font-weight: bold; color: #00ff00;"></div>
-            </div>
-
-            <button id="btn-save" class="btn-action" onclick="saveAndReturn()" style="background:#00aa00; display:none;">SAVE & RETURN TO AGENCY</button>
+            <h2>CASE 01 CLEARED!</h2>
+            <p style="color:#aaa;">คุณถอดรหัสศิลปะการเชื่อมประโยคสำเร็จทั้งหมด 15 ภารกิจ!</p>
+            <div class="exp-reward">+150 EXP & 1 🎟️ ตั๋วสุ่ม!</div>
+            <button id="btn-save" class="btn-action" onclick="saveAndReturn()" style="background:#00aa00; color:#fff;">SAVE & RETURN TO AGENCY</button>
         </div>
-
     </div>
 
     <script>
+        // ================= ⚠️ ใส่ Web App URL ที่นี่ =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
 
-        // ================= ฐานข้อมูลคำถามทั้ง 15 ข้อ =================
-        // วิธีเพิ่มด่าน: ก๊อปปี้ปีกกา { ... } แล้วแก้ข้อความด้านในได้เลย
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            let now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.setValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'clear') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2); osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            } else if (type === 'tick') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.02, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            }
+        }
+
+        // ================= ฐานข้อมูลด่าน Case 1 (15 ข้อ) =================
         const missions = [
-            { type: 'fill', title: 'ปะติดปะต่อเบาะแส 1 (อังกฤษ)', instruction: 'เติมคำเชื่อมภาษาอังกฤษที่หายไปให้ถูกต้อง', sentence: 'The cat is small, {slot:but} it is very brave.', choices: ['and', 'but', 'or', 'so'] },
-            { type: 'fill', title: 'ปะติดปะต่อเบาะแส 2 (อังกฤษ)', instruction: 'เติมคำเชื่อมภาษาอังกฤษที่หายไปให้ถูกต้อง', sentence: 'You can pay by cash {slot:or} credit card.', choices: ['and', 'but', 'or', 'so'] },
-            { type: 'fill', title: 'ปะติดปะต่อเบาะแส 3 (อังกฤษ)', instruction: 'เติมคำเชื่อมภาษาอังกฤษที่หายไปให้ถูกต้อง', sentence: 'My sister is a doctor, {slot:and} my brother is an engineer.', choices: ['and', 'but', 'or', 'so'] },
-            { type: 'fill', title: 'ปะติดปะต่อเบาะแส 4 (อังกฤษ)', instruction: 'เติมคำเชื่อมภาษาอังกฤษที่หายไปให้ถูกต้อง', sentence: 'The weather was bad, {slot:so} the event was cancelled.', choices: ['and', 'but', 'or', 'so'] },
-            { type: 'fill', title: 'ศิลปะการแปลไทย (BUT)', instruction: 'He tried hard, but he couldn\'t win.', sentence: '(เขาพยายามหนักมาก {slot:แต่ก็} เอาชนะไม่ได้)', choices: ['แต่', 'แต่ก็', 'ทว่า', 'ก็เลย'] },
-            { type: 'fill', title: 'ศิลปะการแปลไทย (SO)', instruction: 'I woke up late, so I missed the bus.', sentence: '(ฉันตื่นสาย {slot:ก็เลย} พลาดรถเมล์)', choices: ['ดังนั้น', 'จึง', 'ก็เลย', 'แต่ก็'] },
-            { type: 'fill', title: 'ศิลปะการแปลไทย (AND)', instruction: 'She loves coffee, and she drinks it every morning.', sentence: '(เธอชอบกาแฟ {slot:แล้วก็} ดื่มมันทุกเช้า)', choices: ['และ', 'กับ', 'แล้วก็', 'จึง'] },
-            
-            { type: 'remove', title: 'จับผิดคำเชื่อมซ้ำซ้อน 1', instruction: 'แตะเพื่อ "ลบทิ้ง" 1 คำ ที่ทำให้ประโยคแปลกประหลาด', sentence: 'ฝนตกหนัก {remove:ดังนั้น:true} ฉัน {remove:ก็เลย:false} นอนอยู่บ้าน' },
-            { type: 'remove', title: 'จับผิดคำเชื่อมซ้ำซ้อน 2', instruction: 'แตะเพื่อ "ลบทิ้ง" 1 คำ (การใช้และภาษาไทยไม่ต้องมีทุกจุด)', sentence: 'ฉันชอบกินไก่ทอด {remove:และ:true} พิซซ่า {remove:และ:false} แฮมเบอร์เกอร์' },
-            { type: 'remove', title: 'จับผิดคำเชื่อมซ้ำซ้อน 3', instruction: 'แตะเพื่อ "ลบทิ้ง" 1 คำ ที่ขัดแย้งซ้ำซ้อน', sentence: 'เศรษฐกิจเริ่มดีขึ้น {remove:แต่ทว่า:false} คนจน {remove:แต่ก็:true} ยังมีอยู่มาก' },
-            
-            { type: 'choice', title: 'รหัสลับระดับภาษา (Casual)', instruction: 'เป้าหมาย: ส่งข้อความหาเพื่อนสนิท<br>แปลประโยค: <b>"I\'m hungry, so let\'s eat."</b>', choices: [{ text: 'A. ฉันหิว ดังนั้นพวกเราจงไปรับประทานอาหารกัน', correct: false }, { text: 'B. หิวแล้ว ไปหาไรกินกันเถอะ', correct: true }, { text: 'C. ข้าพเจ้าหิว จึงขอเชิญท่านรับประทานอาหาร', correct: false }] },
-            { type: 'choice', title: 'รหัสลับระดับภาษา (Formal)', instruction: 'เป้าหมาย: เขียนรายงานการประชุมทางการ<br>แปลประโยค: <b>"The weather was bad, but we still went."</b>', choices: [{ text: 'A. อากาศแย่มาก แต่พวกเราก็ยังไป', correct: false }, { text: 'B. สภาพอากาศเลวร้าย ทว่าพวกเราก็ยังคงดำเนินการ', correct: true }, { text: 'C. อากาศไม่ดี แต่ก็ยังอุตส่าห์ไป', correct: false }] },
-            { type: 'choice', title: 'สลายความแข็งทื่อ 1', instruction: 'ประโยคไหนคือผลงานแปลที่เป็น "ธรรมชาติ" แบบมืออาชีพที่สุด?', choices: [{ text: 'A. เขาเปิดกล่อง และ มองเข้าไปข้างใน', correct: false }, { text: 'B. เขาเปิดกล่องดูข้างใน', correct: true }, { text: 'C. เขาทำการเปิดกล่อง และ เขาได้มองไปข้างใน', correct: false }] },
-            { type: 'choice', title: 'สลายความแข็งทื่อ 2', instruction: 'ประโยคไหนคือผลงานแปลที่เป็น "ธรรมชาติ" แบบมืออาชีพที่สุด?', choices: [{ text: 'A. อาหารแพง และ ไม่อร่อยด้วย', correct: false }, { text: 'B. อาหารแพงแถมยังไม่อร่อยอีก', correct: true }, { text: 'C. อาหารนั้นมีราคาแพง และ มีรสชาติไม่ดี', correct: false }] },
-            { type: 'choice', title: 'ศิลปะการละคำเชื่อม', instruction: 'กฎการละคำเชื่อมภาษาไทย:<br><b>"ฉันมาถึง และ ฝนก็เริ่มตก"</b> สามารถตัดคำเชื่อมเป็น <b>"ฉันมาถึงฝนก็เริ่มตก"</b> ได้หรือไม่?', choices: [{ text: '✅ ได้ (ประโยคสั้น บริบทชัดเจน ลื่นไหลกว่า)', correct: true }, { text: '❌ ไม่ได้ (จะทำให้ผิดไวยากรณ์และอ่านไม่รู้เรื่อง)', correct: false }] }
+            { type: 'fill', title: 'รหัสลับ AND (คล้อยตาม) #1', instruction: 'เติมคำเชื่อมให้เป็นธรรมชาติที่สุด (ภาษาพูด)', sentence: 'ฉันไปตลาด ซื้อหมู ซื้อผัก {slot:แล้วก็} กลับบ้าน', choices: ['และ', 'แล้วก็', 'แต่', 'หรือ'] },
+            { type: 'choice', title: 'รหัสลับ AND (คล้อยตาม) #2', instruction: 'ประโยค: <b>"He is handsome and polite."</b><br>คำแปลข้อใดลื่นไหลและดูเป็นธรรมชาติที่สุด?', choices: [{ text: 'A. เขาหล่อและเขาเป็นคนสุภาพ', correct: false }, { text: 'B. เขาหล่อแถมยังสุภาพอีกด้วย', correct: true }, { text: 'C. เขาหล่อกับสุภาพ', correct: false }] },
+            { type: 'fill', title: 'รหัสลับ BUT (ขัดแย้ง) #1', instruction: 'เติมคำเชื่อมเพื่อแสดงอุปสรรคที่พยายามฝ่าฟัน', sentence: 'เขาทำงานหนักมาก {slot:แต่ก็} ยังคงมีเงินไม่พอใช้', choices: ['และ', 'แต่ก็', 'หรือ', 'ดังนั้น'] },
+            { type: 'choice', title: 'รหัสลับ BUT (ขัดแย้ง) #2', instruction: 'หากต้องการแปล <b>But</b> ในนิยายหรือบทความทางการ ควรใช้คำใด?', choices: [{ text: 'A. ทว่า', correct: true }, { text: 'B. แต่ว่านะ', correct: false }, { text: 'C. แล้วก็', correct: false }] },
+            { type: 'fill', title: 'รหัสลับ OR (ทางเลือก) #1', instruction: 'เติมคำเชื่อมสำหรับการเสนอทางเลือก 2 ทาง', sentence: 'คุณอยากดื่มชา {slot:หรือ} กาแฟครับ?', choices: ['และ', 'แต่', 'หรือ', 'ดังนั้น'] },
+            { type: 'choice', title: 'รหัสลับ OR (ทางเลือก) #2', instruction: 'ประโยคบังคับเลือก: <b>"Hurry up, or you will be late."</b><br>แปลอย่างไรให้สมเหตุสมผลที่สุด?', choices: [{ text: 'A. รีบหน่อย หรือ คุณจะสาย', correct: false }, { text: 'B. รีบๆ เข้า มิฉะนั้นจะสายนะ', correct: true }, { text: 'C. รีบนะ แต่คุณจะสาย', correct: false }] },
+            { type: 'fill', title: 'รหัสลับ SO (เหตุผล) #1', instruction: 'เติมคำเชื่อมแสดงผลลัพธ์ (ภาษาพูดธรรมชาติ)', sentence: 'เมื่อวานฝนตกหนักมาก ฉัน {slot:ก็เลย} ไม่ได้ออกไปไหน', choices: ['ดังนั้น', 'ก็เลย', 'แต่', 'หรือ'] },
+            { type: 'choice', title: 'รหัสลับ SO (เหตุผล) #2', instruction: 'หากใช้ <b>So</b> ในรายงานการประชุม ควรแปลว่าอะไร?', choices: [{ text: 'A. ก็เลย', correct: false }, { text: 'B. ดังนั้น / จึง', correct: true }, { text: 'C. แล้วไง', correct: false }] },
+            { type: 'choice', title: 'ศิลปะการละคำเชื่อม #1', instruction: 'ภาษาไทยไม่ชอบคำฟุ่มเฟือย ข้อใดคือการละคำเชื่อมที่ถูกต้องและประโยคยังสมบูรณ์?', choices: [{ text: 'A. ฉันมาถึง และ ฝนก็ตก', correct: false }, { text: 'B. ฉันมาถึงฝนก็ตกพอดี', correct: true }, { text: 'C. ฉันมาถึง หรือ ฝนตก', correct: false }] },
+            { type: 'fill', title: 'ทดสอบรวม #1', instruction: 'วิเคราะห์บริบทและเลือกคำเชื่อม', sentence: 'เขาบอกว่าจะมา {slot:แต่} สุดท้ายก็หายตัวไป', choices: ['และ', 'แต่', 'หรือ', 'ดังนั้น'] },
+            { type: 'fill', title: 'ทดสอบรวม #2', instruction: 'วิเคราะห์บริบทและเลือกคำเชื่อม', sentence: 'เธอต้องตั้งใจเรียน {slot:ไม่งั้น} จะสอบตกนะ', choices: ['และ', 'แต่', 'ไม่งั้น', 'จึง'] },
+            { type: 'fill', title: 'ทดสอบรวม #3', instruction: 'วิเคราะห์บริบทและเลือกคำเชื่อม (ทางการ)', sentence: 'ปริมาณน้ำฝนลดลง {slot:จึง} ส่งผลให้เกิดภัยแล้ง', choices: ['และ', 'ทว่า', 'หรือ', 'จึง'] },
+            { type: 'choice', title: 'ทดสอบรวม #4', instruction: 'ประโยค: <b>"She is rich but she is not happy."</b>', choices: [{ text: 'A. เธอรวยแต่ว่าไม่มีความสุข', correct: true }, { text: 'B. เธอรวยและเธอไม่มีความสุข', correct: false }, { text: 'C. เธอรวยดังนั้นเธอไม่มีความสุข', correct: false }] },
+            { type: 'fill', title: 'ทดสอบรวม #5', instruction: 'การละคำเชื่อม', sentence: 'กินข้าวเสร็จ {slot:ก็} ไปอาบน้ำเข้านอนซะ', choices: ['และ', 'แต่', 'ก็', 'หรือ'] },
+            { type: 'choice', title: 'บททดสอบสุดท้าย Unit 1', instruction: 'กฎเหล็กของการแปลคำเชื่อม (Conjunctions) คืออะไร?', choices: [{ text: 'A. ต้องแปลตามพจนานุกรมคำต่อคำเท่านั้น', correct: false }, { text: 'B. แปลให้ลื่นไหลตามบริบท และละคำเชื่อมได้หากภาษาไทยเข้าใจง่ายกว่า', correct: true }, { text: 'C. ห้ามตัดคำเชื่อมทิ้งเด็ดขาด', correct: false }] }
         ];
 
         let currentIndex = 0;
         let activeSlot = null;
+        let timerInterval;
+        let timeLeft = 30;
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
 
-        // เช็กล็อกอินตอนโหลดหน้าเว็บ
         document.addEventListener("DOMContentLoaded", () => {
-            const agentData = localStorage.getItem('agentData');
-            if (!agentData) window.location.href = 'index.html';
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            if (parseInt(agentData.currentCase) > 1) { alert("ALREADY CLEARED!"); window.location.href = 'index.html'; return; }
             loadMission(currentIndex);
         });
 
-        // ================= ฟังก์ชันโหลดด่าน =================
-        function loadMission(index) {
-            // ถ้าเล่นครบ 15 ด่านแล้ว
-            if (index >= missions.length) {
-                document.getElementById('mission-view').style.display = 'none';
-                document.getElementById('progress-container').style.display = 'none';
-                document.getElementById('result-view').style.display = 'block';
-                return;
+        // ================= ระบบจับเวลา =================
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 30;
+            updateTimerUI();
+            
+            const btnTime = document.getElementById('btn-use-time');
+            if (parseInt(agentData.itemTime) > 0) {
+                btnTime.style.display = 'inline-block';
+            } else {
+                btnTime.style.display = 'none';
             }
 
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                
+                if (timeLeft <= 5 && timeLeft > 0) playSound('tick');
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const timeText = document.getElementById('timer-text');
+            const timeBar = document.getElementById('timer-bar');
+            timeText.innerText = `TIME: ${timeLeft}s`;
+            
+            let percentage = (timeLeft / 30) * 100;
+            if(percentage > 100) percentage = 100;
+            timeBar.style.width = `${percentage}%`;
+
+            if (timeLeft <= 10) {
+                timeText.style.color = '#ff5252';
+                timeBar.style.backgroundColor = '#ff5252';
+            } else {
+                timeText.style.color = '#00bfff';
+                timeBar.style.backgroundColor = '#00bfff';
+            }
+        }
+
+        function useTimeItem() {
+            if (parseInt(agentData.itemTime) > 0) {
+                playSound('success');
+                agentData.itemTime = parseInt(agentData.itemTime) - 1;
+                localStorage.setItem('agentData', JSON.stringify(agentData)); // เซฟในเครื่องไปก่อน ค่อยซิงค์ตอนจบ
+                
+                timeLeft += 15;
+                updateTimerUI();
+                
+                if (parseInt(agentData.itemTime) <= 0) {
+                    document.getElementById('btn-use-time').style.display = 'none';
+                }
+                
+                // ส่งคำสั่งหักไอเทมในชีตเบื้องหลัง (ไม่ต้องรอผล)
+                fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&rewardType=time&rewardAmount=-1`).catch(e=>{});
+            }
+        }
+
+        function handleTimeOut() {
+            playSound('wrong');
+            document.querySelectorAll('.choice-btn, .drop-zone, .word-piece, .btn-action').forEach(b => b.style.pointerEvents = 'none');
+            const msg = document.getElementById('mission-msg');
+            msg.innerText = 'TIME OUT! ภารกิจล้มเหลว'; msg.style.color = '#ff5252';
+            
+            setTimeout(() => { 
+                currentIndex++; 
+                loadMission(currentIndex); 
+            }, 2000);
+        }
+
+        // ================= ระบบด่าน =================
+        function loadMission(index) {
+            if (index >= missions.length) {
+                clearInterval(timerInterval);
+                document.getElementById('mission-view').style.display = 'none';
+                document.querySelector('.status-panel').style.display = 'none';
+                document.getElementById('result-view').style.display = 'block';
+                playSound('clear');
+                return;
+            }
             const m = missions[index];
             const contentDiv = document.getElementById('mission-content');
             const bankDiv = document.getElementById('word-bank');
             const btn = document.getElementById('btn-action');
             const msg = document.getElementById('mission-msg');
 
-            // รีเซ็ตหน้าจอ
             document.getElementById('progress-bar').style.width = ((index / missions.length) * 100) + "%";
             document.getElementById('mission-title').innerText = `MISSION ${index+1}/${missions.length}: ${m.title}`;
             document.getElementById('mission-instruction').innerHTML = m.instruction;
@@ -151,49 +259,25 @@
             bankDiv.style.display = 'none'; btn.style.display = 'none'; msg.innerText = '';
             activeSlot = null;
 
-            // ด่านประเภท: เติมคำในช่องว่าง (Drag & Drop click)
             if (m.type === 'fill') {
-                let html = m.sentence.replace(/{slot:(.*?)}/g, '<span class="drop-zone" onclick="selectSlot(this)" data-expected="$1"></span>');
+                let html = m.sentence.replace(/{slot:(.*?)}/g, '<span class="drop-zone" onclick="playSound(\'click\'); selectSlot(this)" data-expected="$1"></span>');
                 contentDiv.innerHTML = `<div class="case-file">${html}</div>`;
-                m.choices.forEach(word => {
-                    bankDiv.innerHTML += `<div class="word-piece" onclick="fillSlot(this)">${word}</div>`;
-                });
+                m.choices.forEach(w => bankDiv.innerHTML += `<div class="word-piece" onclick="playSound(\'click\'); fillSlot(this)">${w}</div>`);
                 bankDiv.style.display = 'flex';
-                btn.innerText = 'VERIFY EVIDENCE';
-                btn.style.display = 'block'; btn.disabled = false;
-                btn.onclick = checkFill;
-            } 
-            // ด่านประเภท: จับผิดคำซ้ำซ้อน (Click to remove)
-            else if (m.type === 'remove') {
-                let html = m.sentence.replace(/{remove:(.*?):(.*?)}/g, '<span class="clickable-word" onclick="removeWord(this, $2)">$1</span>');
-                contentDiv.innerHTML = `<div class="suspect-sentence">${html}</div>`;
-                btn.innerText = 'PROCEED';
-                btn.style.display = 'block'; btn.disabled = true;
-                btn.onclick = () => { currentIndex++; loadMission(currentIndex); };
-            } 
-            // ด่านประเภท: เลือกคำตอบ (Multiple choice)
-            else if (m.type === 'choice') {
-                m.choices.forEach(c => {
-                    contentDiv.innerHTML += `<button class="choice-btn" onclick="checkChoice(this, ${c.correct})">${c.text}</button>`;
-                });
-                btn.innerText = 'PROCEED';
-                btn.style.display = 'block'; btn.disabled = true;
-                btn.onclick = () => { currentIndex++; loadMission(currentIndex); };
+                btn.innerText = 'VERIFY EVIDENCE'; btn.style.display = 'block'; btn.disabled = false;
+                btn.onclick = () => { playSound('click'); checkFill(); };
+            } else if (m.type === 'choice') {
+                m.choices.forEach(c => contentDiv.innerHTML += `<button class="choice-btn" onclick="checkChoice(this, ${c.correct})">${c.text}</button>`);
             }
 
-            // แอนิเมชันตอนเปลี่ยนด่าน
-            document.getElementById('mission-view').style.animation = 'none';
-            setTimeout(() => document.getElementById('mission-view').style.animation = 'slideIn 0.4s', 10);
+            startTimer(); // เริ่มจับเวลาทุกครั้งที่โหลดข้อใหม่
         }
 
-        // ================= Logic: เติมคำ =================
         function selectSlot(slot) {
             document.querySelectorAll('.drop-zone').forEach(el => el.classList.remove('active'));
             if (slot.classList.contains('filled')) {
                 const word = slot.innerText;
-                document.querySelectorAll('.word-piece').forEach(p => {
-                    if (p.innerText === word && p.classList.contains('used')) p.classList.remove('used');
-                });
+                document.querySelectorAll('.word-piece').forEach(p => { if (p.innerText === word && p.classList.contains('used')) p.classList.remove('used'); });
                 slot.innerText = ''; slot.classList.remove('filled');
             }
             activeSlot = slot; activeSlot.classList.add('active');
@@ -209,158 +293,67 @@
             const slots = document.querySelectorAll('.drop-zone');
             let correct = 0;
             slots.forEach(slot => {
-                const expected = slot.getAttribute('data-expected');
-                const actual = slot.innerText.trim();
-                // อนุโลมคำเชื่อมภาษาไทยบางคำ
-                if (actual === expected || (expected === 'ก็เลย' && actual === 'ดังนั้น') || (expected === 'แต่ก็' && actual === 'แต่')) {
-                    slot.style.borderColor = '#00ff00'; slot.style.color = '#00aa00'; correct++;
-                } else {
-                    slot.style.borderColor = '#ff5252'; slot.style.color = '#ff5252';
-                }
+                if (slot.innerText.trim() === slot.getAttribute('data-expected')) { slot.style.borderColor = '#00ff00'; correct++; }
+                else { slot.style.borderColor = '#ff5252'; }
             });
             const msg = document.getElementById('mission-msg');
             const btn = document.getElementById('btn-action');
             if (correct === slots.length) {
-                msg.innerText = 'ACCESS GRANTED! ข้อมูลถูกต้อง'; msg.style.color = '#00ff00';
-                btn.innerText = 'PROCEED';
-                btn.onclick = () => { currentIndex++; loadMission(currentIndex); };
-            } else {
-                msg.innerText = 'ERROR: ข้อมูลยังไม่สมบูรณ์ ลองอีกครั้ง'; msg.style.color = '#ff5252';
+                clearInterval(timerInterval); // หยุดเวลาถ้าตอบถูก
+                playSound('correct');
+                msg.innerText = 'ACCESS GRANTED!'; msg.style.color = '#00ff00';
+                btn.innerText = 'PROCEED'; btn.onclick = () => { playSound('click'); currentIndex++; loadMission(currentIndex); };
+            } else { 
+                playSound('wrong');
+                msg.innerText = 'ERROR: ไม่ถูกต้อง (-5 วินาที)'; msg.style.color = '#ff5252'; 
+                timeLeft -= 5; // หักเวลา 5 วิ เป็นบทลงโทษ!
+                updateTimerUI();
             }
         }
 
-        // ================= Logic: ลบคำ =================
-        function removeWord(el, isCorrect) {
-            el.classList.add('removed');
-            const msg = document.getElementById('mission-msg');
-            if (isCorrect) {
-                msg.innerText = 'CORRECT: ลบคำซ้ำซ้อนสำเร็จ ประโยคลื่นไหลแล้ว!'; msg.style.color = '#00ff00';
-                document.getElementById('btn-action').disabled = false;
-                document.querySelectorAll('.clickable-word').forEach(w => w.style.pointerEvents = 'none');
-            } else {
-                msg.innerText = 'ERROR: คุณลบผิดคำ! ประโยคพังกว่าเดิม'; msg.style.color = '#ff5252';
-                setTimeout(() => { el.classList.remove('removed'); msg.innerText = ''; }, 1500);
-            }
-        }
-
-        // ================= Logic: ชอยส์ =================
         function checkChoice(btn, isCorrect) {
+            clearInterval(timerInterval); // หยุดเวลา
             document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
             const msg = document.getElementById('mission-msg');
             if (isCorrect) {
-                btn.classList.add('correct');
-                document.getElementById('btn-action').disabled = false;
-                msg.innerText = 'CORRECT!'; msg.style.color = '#00ff00';
+                playSound('correct');
+                btn.classList.add('correct'); msg.innerText = 'CORRECT!'; msg.style.color = '#00ff00';
+                setTimeout(() => { currentIndex++; loadMission(currentIndex); }, 1000);
             } else {
-                btn.classList.add('wrong');
-                msg.innerText = 'ERROR: ลองพิจารณาบริบทการแปลใหม่'; msg.style.color = '#ff5252';
-                setTimeout(() => {
-                    btn.classList.remove('wrong'); msg.innerText = '';
-                    document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'auto');
+                playSound('wrong');
+                btn.classList.add('wrong'); msg.innerText = 'ERROR!'; msg.style.color = '#ff5252';
+                setTimeout(() => { 
+                    currentIndex++; // ผิดแล้วข้ามข้อเลย (เพราะกดตัวเลือกแล้วแก้ไม่ได้)
+                    loadMission(currentIndex); 
                 }, 1500);
             }
         }
 
-        // ================= บันทึกคะแนน =================
         async function saveAndReturn() {
-            const agentData = JSON.parse(localStorage.getItem('agentData'));
-            const btn = document.querySelector('#result-view .btn-action');
-            if (!agentData || !agentData.agentId) { alert("SYSTEM ERROR: ไม่พบข้อมูลสายลับ"); window.location.href = 'index.html'; return; }
-            
-            btn.innerText = "UPLOADING TO DATABASE... ⏳"; btn.style.background = "#555"; btn.disabled = true;
-
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "UPLOADING... ⏳"; btn.disabled = true;
             try {
-                // อัปเดต Case 1, ได้ 150 EXP, และได้ 15 คะแนน
                 const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=1&expGain=150&score=15&ticketGain=1`;
                 const response = await fetch(url);
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    agentData.exp = parseInt(agentData.exp) + 150;
-                    if (parseInt(agentData.currentCase) === 1) agentData.currentCase = 2; // ปลดล็อกด่าน 2
-                    localStorage.setItem('agentData', JSON.stringify(agentData));
-                    
-                    alert("SYSTEM: บันทึกผลสำเร็จ! คุณได้รับ +150 EXP");
-                    window.location.href = 'index.html';
-                } else {
-                    alert("ERROR: บันทึกข้อมูลไม่สำเร็จ (" + result.message + ")");
-                    btn.innerText = "SAVE & RETURN TO AGENCY"; btn.style.background = "#00aa00"; btn.disabled = false;
-                }
-            } catch (error) {
-                alert("CONNECTION ERROR: ไม่สามารถติดต่อฐานข้อมูลได้");
-                btn.innerText = "SAVE & RETURN TO AGENCY"; btn.style.background = "#00aa00"; btn.disabled = false;
-            }
-        }
-
-        function goBack() { window.location.href = 'index.html'; }
-        // ตัวแปรเก็บของที่สุ่มได้ เพื่อส่งไปให้ Google Sheets
-        let rewardTypeStr = "";
-        let rewardAmountNum = 0;
-
-        // ฟังก์ชันสุ่มของ (Gacha)
-        function openGacha() {
-            const briefcase = document.getElementById('briefcase-icon');
-            const gachaResult = document.getElementById('gacha-result');
-            
-            // ทำให้กระเป๋าสั่นๆ เล็กน้อย
-            briefcase.style.transform = "rotate(-20deg)";
-            setTimeout(() => briefcase.style.transform = "rotate(20deg)", 100);
-            setTimeout(() => briefcase.style.transform = "rotate(-20deg)", 200);
-            setTimeout(() => briefcase.style.transform = "rotate(0deg)", 300);
-
-            setTimeout(() => {
-                // รายการไอเทม: 0 = แว่นขยาย, 1 = นาฬิกาทราย, 2 = แฟ้มลับ
-                const items = ['hint', 'time', 'file'];
-                const itemNames = ['🔍 แว่นขยาย (Hint)', '⏳ นาฬิกาทราย (Time)', '📁 แฟ้มลับ (Cheat Sheet)'];
-                
-                // สุ่มไอเทม และ สุ่มจำนวน (1-2 ชิ้น)
-                const randomIdx = Math.floor(Math.random() * items.length);
-                rewardAmountNum = Math.floor(Math.random() * 2) + 1; 
-                rewardTypeStr = items[randomIdx];
-
-                briefcase.style.display = "none"; // ซ่อนกระเป๋า
-                gachaResult.style.display = "block"; // โชว์ของที่ได้
-                gachaResult.innerHTML = `คุณได้รับ: <br><span style="font-size:30px; color:#fff;">${itemNames[randomIdx]} x${rewardAmountNum}</span>`;
-                
-                // โชว์ปุ่มเซฟ
-                document.getElementById('btn-save').style.display = "block";
-            }, 500);
-        }
-
-        // ฟังก์ชันส่งข้อมูลคะแนนและไอเทมเข้า Google Sheets
-        async function saveAndReturn() {
-            const agentData = JSON.parse(localStorage.getItem('agentData'));
-            const btn = document.getElementById('btn-save');
-            
-            if (!agentData || !agentData.agentId) { alert("SYSTEM ERROR"); window.location.href = 'index.html'; return; }
-            
-            btn.innerText = "UPLOADING TO DATABASE... ⏳"; btn.style.background = "#555"; btn.disabled = true;
-
-            try {
-                // แนบข้อมูล rewardType และ rewardAmount ไปด้วย
-                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=1&expGain=150&score=15&rewardType=${rewardTypeStr}&rewardAmount=${rewardAmountNum}`;
-                const response = await fetch(url);
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    // อัปเดตข้อมูลบนหน้าจอเด็กให้ตรงกับเซิร์ฟเวอร์
-                    agentData.exp = parseInt(agentData.exp) + 150;
-                    if (parseInt(agentData.currentCase) === 1) agentData.currentCase = 2;
-                    
-                    if(rewardTypeStr === 'hint') agentData.itemHint = parseInt(agentData.itemHint || 0) + rewardAmountNum;
-                    if(rewardTypeStr === 'time') agentData.itemTime = parseInt(agentData.itemTime || 0) + rewardAmountNum;
-                    if(rewardTypeStr === 'file') agentData.itemFile = parseInt(agentData.itemFile || 0) + rewardAmountNum;
+                    agentData.exp = parseInt(result.newExp);
+                    agentData.rank = result.newRank;
+                    agentData.tickets = parseInt(result.newTickets);
+                    agentData.currentCase = 2; // ปลดล็อก Case 2
                     
                     localStorage.setItem('agentData', JSON.stringify(agentData));
-                    alert("SYSTEM: ข้อมูลทั้งหมดถูกอัปโหลดเข้าศูนย์บัญชาการแล้ว!");
+                    playSound('success');
+                    alert("MISSION COMPLETE! ข้อมูลถูกบันทึกลงระบบแล้ว");
                     window.location.href = 'index.html';
                 } else {
-                    alert("ERROR: บันทึกข้อมูลไม่สำเร็จ");
-                    btn.innerText = "SAVE & RETURN TO AGENCY"; btn.style.background = "#00aa00"; btn.disabled = false;
+                    playSound('error'); alert("ERROR: " + result.message);
+                    btn.innerText = "SAVE & RETURN TO AGENCY"; btn.disabled = false;
                 }
-            } catch (error) {
-                alert("CONNECTION ERROR: ไม่สามารถติดต่อฐานข้อมูลได้");
-                btn.innerText = "SAVE & RETURN TO AGENCY"; btn.style.background = "#00aa00"; btn.disabled = false;
+            } catch (e) { 
+                playSound('error'); alert("CONNECTION ERROR: บันทึกข้อมูลไม่สำเร็จ"); 
+                btn.innerText = "SAVE & RETURN TO AGENCY"; btn.disabled = false;
             }
         }
     </script>
