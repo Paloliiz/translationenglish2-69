@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE GACHA VAULT</title>
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { max-width: 500px; width: 100%; background: #1a1a1a; border: 2px solid #8b0000; padding: 30px; box-shadow: 0 0 30px rgba(139,0,0,0.5); text-align: center; }
+        h1 { color: #d32f2f; letter-spacing: 2px; margin-top: 0; }
+        .ticket-box { background: #000; border: 1px dashed #00ff00; padding: 10px; margin-bottom: 25px; color: #00ff00; font-weight: bold; }
+        .vault-machine { font-size: 80px; margin: 20px 0; cursor: pointer; user-select: none; transition: 0.2s; }
+        .vault-machine:hover { transform: scale(1.05); }
+        .btn-pull { background: #d32f2f; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; letter-spacing: 1px; width: 100%; margin-top: 15px; }
+        .btn-pull:hover { background: #b71c1c; }
+        .btn-back { background: #333; color: #fff; border: none; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; font-family: inherit; }
+        .btn-back:hover { background: #555; }
+        #reward-display { margin-top: 20px; font-size: 18px; color: #ffeb3b; min-height: 60px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔐 THE GACHA VAULT</h1>
+        <p style="color: #888; font-size: 13px;">ใช้ตั๋วสายลับเพื่อสุ่มหากระเป๋าไอเทมลับและสกินตัวละครระดับแรร์!</p>
+        
+        <div class="ticket-box">
+            🎟️ ตั๋วสุ่มคงเหลือ: <span id="ticket-count">1</span> ใบ
+        </div>
+
+        <div class="vault-machine" id="vault-icon">🎰</div>
+
+        <div id="reward-display">กดปุ่มด้านล่างเพื่อเสี่ยงโชค!</div>
+
+        <button class="btn-pull" id="pull-btn" onclick="pullGacha()">DRAW REWARD (ใช้ตั๋ว 1 ใบ)</button>
+        <button class="btn-back" onclick="goDashboard()">◀ กลับสู่ศูนย์บัญชาการ</button>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            // สมมติให้ในเครื่องจำลองตั๋วไว้ หรือดึงจาก agentData.tickets
+            updateTicketUI();
+        });
+
+        function updateTicketUI() {
+            // สมมติให้เริ่มต้นมีตั๋ว 3 ใบ (หรือผูกกับฐานข้อมูลจริง)
+            let tickets = agentData.tickets !== undefined ? agentData.tickets : 3;
+            document.getElementById('ticket-count').innerText = tickets;
+            if (tickets <= 0) {
+                document.getElementById('pull-btn').disabled = true;
+                document.getElementById('pull-btn').style.background = "#555";
+            }
+        }
+
+        async function pullGacha() {
+            let tickets = agentData.tickets !== undefined ? agentData.tickets : 3;
+            if (tickets <= 0) { alert("ตั๋วหมด! ต้องไปทำภารกิจเคสต่างๆ เพื่อรับตั๋วเพิ่ม"); return; }
+
+            const vault = document.getElementById('vault-icon');
+            const rewardBox = document.getElementById('reward-display');
+            const pullBtn = document.getElementById('pull-btn');
+            
+            pullBtn.disabled = true;
+            vault.style.transform = "rotate(15deg)";
+            setTimeout(() => vault.style.transform = "-rotate(15deg)", 100);
+            setTimeout(() => vault.style.transform = "rotate(0deg)", 200);
+
+            // รายการของรางวัลในตู้กาชา (สัดส่วนเกลือ / แรร์)
+            const pool = [
+                { type: 'hint', amount: 2, name: '🔍 แว่นขยาย x2' },
+                { type: 'time', amount: 1, name: '⏳ นาฬิกาทราย x1' },
+                { type: 'file', amount: 1, name: '📁 แฟ้มลับคำศัพท์ x1' },
+                { type: 'skin', amount: 'elite_spy.png', name: '✨ สกินแรร์: Interpreter Spy' }
+            ];
+
+            // สุ่มของรางวัล
+            const won = pool[Math.floor(Math.random() * pool.length)];
+            
+            tickets--;
+            agentData.tickets = tickets;
+            
+            // อัปเดตข้อมูลไอเทมในเครื่อง
+            if (won.type === 'skin') {
+                agentData.avatarId = won.amount;
+            } else if (won.type === 'hint') {
+                agentData.itemHint = parseInt(agentData.itemHint || 0) + won.amount;
+            } else if (won.type === 'time') {
+                agentData.itemTime = parseInt(agentData.itemTime || 0) + won.amount;
+            } else if (won.type === 'file') {
+                agentData.itemFile = parseInt(agentData.itemFile || 0) + won.amount;
+            }
+
+            localStorage.setItem('agentData', JSON.stringify(agentData));
+            updateTicketUI();
+
+            rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span style="color:#00ff00; font-size:22px;">${won.name}</span>`;
+            pullBtn.disabled = false;
+
+            // ส่งข้อมูลไปเซฟลง Google Sheets เงียบๆ
+            try {
+                await fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=0&score=0&rewardType=${won.type}&rewardAmount=${won.amount}`);
+            } catch (e) { console.log("Sync error"); }
+        }
+
+        function goDashboard() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
