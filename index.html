@@ -61,6 +61,11 @@
         .stat-label { color: #888; display: inline-block; width: 65px; }
         .stat-value { color: #fff; font-weight: bold; }
         
+        /* ปุ่ม Sync Data */
+        .btn-sync { background: #111; border: 1px dashed #00bfff; color: #00bfff; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 8px; font-weight: bold; border-radius: 3px; transition: 0.2s; }
+        .btn-sync:hover { background: #00bfff; color: #000; box-shadow: 0 0 10px rgba(0,191,255,0.5); }
+        .btn-sync:disabled { background: #333; color: #777; border-color: #555; cursor: not-allowed; box-shadow: none; }
+
         .inventory-panel { border: 1px solid #333; padding: 15px; margin-bottom: 20px; background: #0a0a0a; }
         .inventory-panel h3 { margin-top: 0; color: #aaa; font-size: 14px; border-bottom: 1px dashed #333; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .item-grid { display: flex; gap: 15px; justify-content: space-around; flex-wrap: wrap; margin-bottom: 12px; }
@@ -71,7 +76,7 @@
         .btn-gacha { background: #ffb300; color: #000; border: 2px solid #ffe57f; padding: 12px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: 0.1s; font-size: 14px; }
         .btn-gacha:hover { background: #ffd54f; box-shadow: 0 0 15px rgba(255,179,0,0.6); transform: translateY(-1px); }
 
-        /* ================= โซนแฟ้มสรุปความรู้ (สร้างใหม่แยกต่างหาก) ================= */
+        /* โซนแฟ้มสรุปความรู้ */
         .archive-panel { border: 1px solid #333; padding: 15px; background: #050505; margin-bottom: 20px; }
         .archive-panel h3 { margin-top: 0; color: #00bfff; font-size: 16px; letter-spacing: 1px; text-align: center; margin-bottom: 15px; }
         .archive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -79,7 +84,7 @@
         .btn-archive { background: #111; border: 1px dashed #00bfff; color: #00bfff; padding: 12px; cursor: pointer; border-radius: 4px; font-size: 12px; font-family: inherit; font-weight: bold; transition: 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-archive:hover { background: #00bfff; color: #000; box-shadow: 0 0 12px rgba(0,191,255,0.6); }
 
-        /* ================= โซนด่านสืบสวน ================= */
+        /* โซนด่านสืบสวน */
         .mission-board { border: 1px solid #333; padding: 15px; background: #050505; }
         .mission-board h3 { margin-top: 0; color: #00ff00; font-size: 16px; letter-spacing: 1px; text-align: center; margin-bottom: 15px; }
         .case-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -145,6 +150,8 @@
                     <h2>AGENT <span id="display-name">UNKNOWN</span></h2>
                     <div class="stat-line"><span class="stat-label">RANK:</span> <span class="stat-value" id="display-rank">---</span></div>
                     <div class="stat-line"><span class="stat-label">EXP:</span> <span class="stat-value" id="display-exp">0</span></div>
+                    <!-- ปุ่ม SYNC ใหม่ -->
+                    <button id="btn-sync" class="btn-sync" onclick="playSound('click'); syncData();">🔄 SYNC DATA</button>
                 </div>
             </div>
 
@@ -161,7 +168,7 @@
                 <button class="btn-gacha" onclick="playSound('click'); window.location.href='gacha.html'">🎰 เข้าสู่ห้องสุ่มตู้กาชา (GACHA VAULT)</button>
             </div>
 
-            <!-- ================= หมวดหมู่แฟ้มความรู้ (ใหม่) ================= -->
+            <!-- โซนแฟ้มสรุปความรู้ -->
             <div class="archive-panel">
                 <h3>📚 AGENCY ARCHIVES (แฟ้มสรุปความรู้)</h3>
                 <div class="archive-grid">
@@ -303,6 +310,35 @@
                     }, 1500);
                 } else { playSound('error'); msgDiv.innerHTML = result.message; msgDiv.style.color = "#ff5252"; btn.disabled = false; }
             } catch (error) { playSound('error'); msgDiv.innerHTML = "CONNECTION ERROR"; msgDiv.style.color = "#ff5252"; btn.disabled = false; }
+        }
+
+        // ================= ฟังก์ชัน Sync Data (ใหม่) =================
+        async function syncData() {
+            const agentData = JSON.parse(localStorage.getItem('agentData'));
+            if(!agentData) return;
+            
+            const btn = document.getElementById('btn-sync');
+            btn.innerText = "SYNCING... ⏳"; btn.disabled = true;
+            
+            try {
+                const url = `${WEB_APP_URL}?action=sync&agentId=${encodeURIComponent(agentData.agentId)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    localStorage.setItem('agentData', JSON.stringify(result));
+                    showDashboard(result); // รีเฟรชหน้าจอใหม่
+                    playSound('success');
+                } else {
+                    playSound('error');
+                    alert("SYNC ERROR: " + result.message);
+                }
+            } catch (error) {
+                playSound('error');
+                alert("SYNC ERROR: ไม่สามารถติดต่อฐานข้อมูลได้");
+            } finally {
+                btn.innerText = "🔄 SYNC DATA"; btn.disabled = false;
+            }
         }
 
         function showDashboard(data) {
