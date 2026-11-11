@@ -271,7 +271,7 @@
 
             try {
                 // อัปเดต Case 1, ได้ 150 EXP, และได้ 15 คะแนน
-                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=1&expGain=150&score=15`;
+                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=1&expGain=150&score=15&ticketGain=1`;
                 const response = await fetch(url);
                 const result = await response.json();
 
