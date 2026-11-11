@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Translation Detective Agency</title>
+    <style>
+        /* ================= CSS หลัก ================= */
+        body {
+            background-color: #121212; color: #e0e0e0; font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 0; min-height: 100vh; display: flex;
+            justify-content: center; align-items: center;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .view-section { display: none; width: 100%; max-width: 800px; padding: 20px; }
+        .view-section.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ================= ป้ายสถานะ API ================= */
+        .api-status-bar {
+            position: fixed; bottom: 15px; right: 15px; background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #444; padding: 8px 12px; font-size: 11px;
+            color: #aaa; z-index: 1000; letter-spacing: 1px;
+        }
+        .status-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            margin-right: 5px; background-color: #ffb300; /* สีเหลืองตอนกำลังโหลด */
+            box-shadow: 0 0 5px #ffb300;
+        }
+        .status-dot.online { background-color: #00ff00; box-shadow: 0 0 5px #00ff00; }
+        .status-dot.offline { background-color: #ff5252; box-shadow: 0 0 5px #ff5252; }
+
+        /* ================= หน้า Login ================= */
+        .vault-box {
+            background: rgba(20, 20, 20, 0.95); padding: 40px; border: 1px solid #444;
+            border-top: 4px solid #8b0000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-align: center; width: 100%; max-width: 320px; margin: 0 auto; box-sizing: border-box;
+        }
+        .vault-box h2 { color: #d32f2f; letter-spacing: 3px; margin-bottom: 5px; }
+        .subtitle { font-size: 12px; color: #888; margin-bottom: 25px; letter-spacing: 1px; }
+        .input-group { text-align: left; margin-bottom: 15px; position: relative; }
+        .input-group label { font-size: 12px; color: #00ff00; }
+        .input-group input {
+            width: 100%; padding: 10px; margin-top: 5px; background: #000;
+            border: 1px solid #333; color: #00ff00; font-family: inherit; box-sizing: border-box;
+        }
+        #passcode { padding-right: 65px; }
+        .toggle-password {
+            position: absolute; right: 10px; top: 32px; font-size: 12px;
+            color: #888; cursor: pointer; user-select: none; transition: 0.2s;
+        }
+        .toggle-password:hover { color: #fff; }
+        .input-group input:focus { outline: none; border-color: #00ff00; }
+        .btn-main {
+            background: #d32f2f; color: white; border: none; padding: 12px; font-size: 14px;
+            font-weight: bold; cursor: pointer; width: 100%; font-family: inherit;
+            letter-spacing: 1px; margin-top: 10px; transition: 0.3s; box-sizing: border-box;
+        }
+        .btn-main:hover { background: #b71c1c; }
+        .btn-main:disabled { background: #555; cursor: not-allowed; }
+        .message { margin-top: 20px; font-size: 13px; min-height: 20px; }
+
+        /* ================= หน้า Dashboard ================= */
+        .dashboard-container {
+            background: rgba(20, 20, 20, 0.95); border: 1px solid #333;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); padding: 20px; box-sizing: border-box;
+        }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #8b0000; padding-bottom: 10px; margin-bottom: 20px;
+        }
+        header h1 { margin: 0; color: #d32f2f; font-size: 24px; letter-spacing: 2px; }
+        .btn-logout { background: #333; color: #fff; border: 1px solid #555; padding: 8px 15px; cursor: pointer; font-family: inherit; }
+        .btn-logout:hover { background: #d32f2f; border-color: #d32f2f; }
+        .profile-panel { display: flex; gap: 20px; margin-bottom: 20px; padding: 15px; border: 1px solid #00ff00; background: #0a0a0a; flex-wrap: wrap; }
+        .avatar-box { width: 100px; height: 100px; border: 2px dashed #00ff00; display: flex; align-items: center; justify-content: center; color: #00ff00; font-size: 12px; text-align: center; }
+        .agent-info { flex-grow: 1; }
+        .agent-info h2 { margin: 0 0 10px 0; color: #00ff00; word-break: break-word; }
+        .stat-line { margin: 5px 0; font-size: 14px; }
+        .stat-label { color: #888; display: inline-block; width: 70px; }
+        .stat-value { color: #fff; font-weight: bold; }
+        .inventory-panel { border: 1px solid #444; padding: 15px; margin-bottom: 20px; background: #1a1a1a; }
+        .inventory-panel h3 { margin-top: 0; color: #aaa; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .item-grid { display: flex; gap: 15px; justify-content: space-around; flex-wrap: wrap; }
+        .item { text-align: center; margin-bottom: 10px; }
+        .item-icon { font-size: 30px; margin-bottom: 5px; }
+        .item-count { color: #00ff00; font-weight: bold; }
+        .item-name { font-size: 12px; color: #888; }
+        .mission-board { border: 1px solid #444; padding: 15px; background: #111; }
+        .mission-board h3 { margin-top: 0; color: #d32f2f; font-size: 18px; letter-spacing: 1px; text-align: center; }
+        .case-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .case-list { grid-template-columns: 1fr; } }
+        .case-card { border: 1px solid #333; padding: 15px; background: #1a1a1a; position: relative; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .case-card:hover:not(.locked) { transform: translateY(-2px); border-color: #00ff00; }
+        .case-card.locked { opacity: 0.5; cursor: not-allowed; }
+        .case-card.locked::after { content: "🔒 LOCKED"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 5px 10px; color: #d32f2f; font-weight: bold; border: 1px solid #d32f2f; }
+        .case-title { font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .case-desc { font-size: 12px; color: #888; }
+        .case-status { margin-top: 10px; font-size: 12px; color: #00ff00; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <!-- แถบสถานะ API -->
+    <div class="api-status-bar">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">DB LINK: CHECKING...</span>
+    </div>
+
+    <!-- ================= ส่วนที่ 1: หน้า LOGIN ================= -->
+    <div id="login-view" class="view-section active">
+        <div class="vault-box">
+            <h2>THE VAULT</h2>
+            <div class="subtitle">TRANSLATION DETECTIVE AGENCY</div>
+            
+            <div class="input-group">
+                <label>AGENT ID</label>
+                <input type="text" id="agentId" placeholder="รหัสนักเรียน">
+            </div>
+            
+            <div class="input-group">
+                <label>PASSCODE</label>
+                <input type="password" id="passcode" placeholder="ชื่อจริงภาษาไทย">
+                <span class="toggle-password" id="toggleBtn" onclick="togglePassword()">[SHOW]</span>
+            </div>
+            
+            <button id="loginBtn" class="btn-main" onclick="verifyAgent()" disabled>INITIALIZING...</button>
+            <div id="msg" class="message"></div>
+        </div>
+    </div>
+
+    <!-- ================= ส่วนที่ 2: หน้า DASHBOARD ================= -->
+    <div id="dashboard-view" class="view-section">
+        <div class="dashboard-container">
+            <header>
+                <h1>AGENCY TERMINAL</h1>
+                <button class="btn-logout" onclick="logout()">LOGOUT</button>
+            </header>
+
+            <div class="profile-panel">
+                <div class="avatar-box">
+                    [TOP<br>SECRET<br>PHOTO]
+                </div>
+                <div class="agent-info">
+                    <h2>AGENT <span id="display-name">UNKNOWN</span></h2>
+                    <div class="stat-line"><span class="stat-label">RANK:</span> <span class="stat-value" id="display-rank">---</span></div>
+                    <div class="stat-line"><span class="stat-label">EXP:</span> <span class="stat-value" id="display-exp">0</span></div>
+                </div>
+            </div>
+
+            <div class="inventory-panel">
+                <h3>💼 INVENTORY BRIEFCASE</h3>
+                <div class="item-grid">
+                    <div class="item">
+                        <div class="item-icon">🔍</div>
+                        <div class="item-count" id="item-hint">0</div>
+                        <div class="item-name">แว่นขยาย (Hint)</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-icon">⏳</div>
+                        <div class="item-count" id="item-time">0</div>
+                        <div class="item-name">นาฬิกาทราย (Time)</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-icon">📁</div>
+                        <div class="item-count" id="item-file">0</div>
+                        <div class="item-name">แฟ้มลับ (Cheat Sheet)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mission-board">
+                <h3>📌 ACTIVE CASE FILES</h3>
+                <div class="case-list">
+                    <div class="case-card" id="case-1" onclick="startMission(1)">
+                        <div class="case-title">CASE 01: The Broken Story</div>
+                        <div class="case-desc">Unit 1: Translating Conjunctions<br>ต่อจดหมายที่ขาดหายด้วยศิลปะการเชื่อมประโยค</div>
+                        <div class="case-status">STATUS: <span id="status-1">OPEN</span></div>
+                    </div>
+                    
+                    <div class="case-card" id="case-2" onclick="startMission(2)">
+                        <div class="case-title">CASE 02: Identify the Target</div>
+                        <div class="case-desc">Unit 2: Relative Clauses<br>ตามหาตัวผู้ต้องสงสัยด้วยการถอดรหัส ที่/ซึ่ง/อัน</div>
+                        <div class="case-status">STATUS: <span id="status-2">LOCKED</span></div>
+                    </div>
+
+                    <div class="case-card" id="case-3" onclick="startMission(3)">
+                        <div class="case-title">CASE 03: Crime Scene Inv.</div>
+                        <div class="case-desc">Unit 3: Passive Voice<br>สืบหาความจริงในที่เกิดเหตุ ใครทำ หรือ ถูกกระทำ?</div>
+                        <div class="case-status">STATUS: <span id="status-3">LOCKED</span></div>
+                    </div>
+
+                    <div class="case-card" id="case-4" onclick="startMission(4)">
+                        <div class="case-title">CASE 04: The Secret Code</div>
+                        <div class="case-desc">Unit 4: Word-for-Word vs Sense-for-Sense<br>ดักฟังและถอดความหมายแฝงจากสำนวนลับ</div>
+                        <div class="case-status">STATUS: <span id="status-4">LOCKED</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Javascript ================= -->
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+
+        // เช็กการเชื่อมต่อ Database เมื่อโหลดหน้าเว็บ
+        document.addEventListener("DOMContentLoaded", () => {
+            pingDatabase();
+            
+            const agentData = localStorage.getItem('agentData');
+            if (agentData) {
+                showDashboard(JSON.parse(agentData));
+            }
+        });
+
+        // ฟังก์ชันทดสอบการเชื่อมต่อ API
+        async function pingDatabase() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=ping`);
+                const result = await response.json();
+                
+                if(result.status === 'online') {
+                    dot.className = "status-dot online";
+                    text.innerText = "DB LINK: SECURE";
+                    text.style.color = "#00ff00";
+                    loginBtn.innerText = "ACCESS TERMINAL";
+                    loginBtn.disabled = false;
+                }
+            } catch (error) {
+                dot.className = "status-dot offline";
+                text.innerText = "DB LINK: FAILED";
+                text.style.color = "#ff5252";
+                loginBtn.innerText = "OFFLINE";
+                document.getElementById('msg').innerHTML = "SYSTEM ERROR: ไม่สามารถติดต่อฐานข้อมูลได้ โปรดแจ้งครูผู้สอน";
+                document.getElementById('msg').style.color = "#ff5252";
+            }
+        }
+
+        function togglePassword() {
+            const passInput = document.getElementById('passcode');
+            const toggleBtn = document.getElementById('toggleBtn');
+            
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleBtn.innerText = '[HIDE]';
+                toggleBtn.style.color = '#00ff00';
+            } else {
+                passInput.type = 'password';
+                toggleBtn.innerText = '[SHOW]';
+                toggleBtn.style.color = '#888';
+            }
+        }
+
+        async function verifyAgent() {
+            const agentId = document.getElementById('agentId').value;
+            const passcode = document.getElementById('passcode').value;
+            const msgDiv = document.getElementById('msg');
+            const btn = document.getElementById('loginBtn');
+
+            if(!agentId || !passcode) {
+                msgDiv.innerHTML = "SYSTEM ERROR: ข้อมูลไม่ครบถ้วน";
+                msgDiv.style.color = "#ff5252";
+                return;
+            }
+
+            msgDiv.innerHTML = "Authenticating... Please wait.";
+            msgDiv.style.color = "#888";
+            btn.disabled = true;
+
+            try {
+                const url = `${WEB_APP_URL}?action=login&agentId=${encodeURIComponent(agentId)}&passcode=${encodeURIComponent(passcode)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    msgDiv.innerHTML = `ACCESS GRANTED. Welcome, Agent ${result.firstName}!`;
+                    msgDiv.style.color = "#00ff00";
+                    
+                    localStorage.setItem('agentData', JSON.stringify(result));
+                    
+                    setTimeout(() => {
+                        showDashboard(result);
+                        msgDiv.innerHTML = ""; 
+                        btn.disabled = false;
+                        document.getElementById('agentId').value = "";
+                        document.getElementById('passcode').value = "";
+                        document.getElementById('passcode').type = 'password';
+                        document.getElementById('toggleBtn').innerText = '[SHOW]';
+                        document.getElementById('toggleBtn').style.color = '#888';
+                    }, 1500);
+                } else {
+                    msgDiv.innerHTML = result.message;
+                    msgDiv.style.color = "#ff5252";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                msgDiv.innerHTML = "CONNECTION ERROR: การเชื่อมต่อขาดหาย";
+                msgDiv.style.color = "#ff5252";
+                btn.disabled = false;
+            }
+        }
+
+        function showDashboard(data) {
+            document.getElementById('login-view').classList.remove('active');
+            document.getElementById('dashboard-view').classList.add('active');
+
+            document.getElementById('display-name').innerText = data.firstName;
+            document.getElementById('display-rank').innerText = data.rank || "Rookie Agent";
+            document.getElementById('display-exp').innerText = data.exp || 0;
+            
+            document.getElementById('item-hint').innerText = data.itemHint || 0;
+            document.getElementById('item-time').innerText = data.itemTime || 0;
+            document.getElementById('item-file').innerText = data.itemFile || 0;
+
+            const currentCase = parseInt(data.currentCase) || 1;
+            
+            for (let i = 1; i <= 4; i++) {
+                const caseCard = document.getElementById(`case-${i}`);
+                const caseStatus = document.getElementById(`status-${i}`);
+                
+                if (i > currentCase) {
+                    caseCard.classList.add('locked');
+                    caseStatus.innerText = 'LOCKED';
+                } else if (i < currentCase) {
+                    caseStatus.innerText = 'CLEARED';
+                    caseStatus.style.color = '#888';
+                } else {
+                    caseStatus.innerText = 'OPEN';
+                    caseStatus.style.color = '#00ff00';
+                }
+            }
+        }
+
+        function startMission(caseNumber) {
+            const data = JSON.parse(localStorage.getItem('agentData'));
+            const currentCase = parseInt(data.currentCase) || 1;
+
+            if (caseNumber > currentCase) {
+                alert("ACCESS DENIED: คุณยังไม่ได้รับสิทธิ์ให้เข้าถึงแฟ้มคดีนี้");
+                return;
+            }
+            window.location.href = `case${caseNumber}.html`;
+        }
+
+        function logout() {
+            localStorage.removeItem('agentData');
+            document.getElementById('dashboard-view').classList.remove('active');
+            document.getElementById('login-view').classList.add('active');
+        }
+    </script>
+</body>
+</html>
