@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGENT WARDROBE</title>
+    <style>
+        body { background-color: #0b0b0b; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 800px; margin: 0 auto; background: #151515; border: 2px solid #00bfff; padding: 25px; box-shadow: 0 0 20px rgba(0,191,255,0.3); border-radius: 8px; }
+        h1 { color: #00bfff; letter-spacing: 3px; text-shadow: 0 0 10px rgba(0,191,255,0.5); }
+        .btn-back { background: #333; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-family: inherit; font-weight: bold; margin-bottom: 20px; }
+        .btn-back:hover { background: #555; }
+        
+        .section-title { color: #ffeb3b; border-bottom: 2px dashed #ffeb3b; padding-bottom: 5px; margin-top: 30px; text-align: left; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 15px; }
+        .item-card { background: #0a0a0a; border: 1px solid #333; padding: 10px; text-align: center; position: relative; border-radius: 5px; }
+        .item-card img { width: 90px; height: 90px; object-fit: contain; }
+        .item-name { font-size: 11px; margin: 8px 0; min-height: 26px; }
+        .locked img { filter: grayscale(100%) opacity(30%); }
+        .btn-equip { padding: 5px 10px; width: 100%; border: none; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 11px; border-radius: 3px; }
+        
+        .btn-equip.locked { background: #444; color: #888; cursor: not-allowed; }
+        .btn-equip.unlocked { background: #00bfff; color: #000; }
+        .btn-equip.equipped { background: #00aa00; color: #fff; cursor: default; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button class="btn-back" onclick="window.location.href='index.html'">◀ BACK TO TERMINAL</button>
+        <h1>👔 AGENT WARDROBE</h1>
+        <p style="color: #aaa; font-size: 13px;">เลือกสวมใส่สกินและกรอบรูปที่คุณปลดล็อกได้จากตู้กาชา</p>
+        <p id="msg-box" style="color: #00ff00; font-weight: bold;"></p>
+
+        <h3 class="section-title">👤 AVATAR SKINS (สกินตัวละคร)</h3>
+        <div class="grid" id="skin-grid"></div>
+
+        <h3 class="section-title">🖼️ PROFILE FRAMES (กรอบโปรไฟล์)</h3>
+        <div class="grid" id="frame-grid"></div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
+        if (!agentData) window.location.href = 'index.html';
+
+        // ของทุกชิ้นในเกม
+        const allSkins = [
+            { id: 'rookie_detective.png', name: 'Rookie Detective' },
+            { id: 'agent_female_scout.png', name: 'Female Scout' },
+            { id: 'interpreter_spy.png', name: 'Interpreter Spy' },
+            { id: 'agent_female_detective.png', name: 'Female Detective' },
+            { id: 'master_translator.png', name: 'Master Translator' },
+            { id: 'agent_female_elite.png', name: 'Female Elite' },
+            { id: 'agent_female_epic.png', name: 'Epic Agent' },
+            { id: 'elite_agent_neon.png', name: 'Neon Agent' },
+            { id: 'legendary_master.png', name: 'Legendary Master' },
+            { id: 'legendary_female_scholar.png', name: 'Legendary Scholar' }
+        ];
+
+        const allFrames = [
+            { id: 'common_frame.png', name: 'Bronze Frame' },
+            { id: 'elite_frame.png', name: 'Elite Frame' },
+            { id: 'elite_platinum_frame.png', name: 'Platinum Frame' },
+            { id: 'elite_cyber_frame.png', name: 'Cyber Frame' },
+            { id: 'ultimate_frame.png', name: 'Ultimate Frame' }
+        ];
+
+        function renderWardrobe() {
+            // ของพื้นฐานที่ทุกคนมี
+            let owned = agentData.ownedItems ? agentData.ownedItems.split(',') : [];
+            if(!owned.includes('rookie_detective.png')) owned.push('rookie_detective.png');
+            if(!owned.includes('common_frame.png')) owned.push('common_frame.png');
+
+            document.getElementById('skin-grid').innerHTML = allSkins.map(s => {
+                let isOwned = owned.includes(s.id);
+                let isEquipped = agentData.avatarId === s.id;
+                let btnHtml = isEquipped ? `<button class="btn-equip equipped">EQUIPPED</button>` : 
+                              isOwned ? `<button class="btn-equip unlocked" onclick="equipItem('skin', '${s.id}')">EQUIP</button>` : 
+                              `<button class="btn-equip locked" disabled>🔒 LOCKED</button>`;
+                return `<div class="item-card ${isOwned ? '' : 'locked'}"><img src="avatars/${s.id}"><div class="item-name">${s.name}</div>${btnHtml}</div>`;
+            }).join('');
+
+            document.getElementById('frame-grid').innerHTML = allFrames.map(f => {
+                let isOwned = owned.includes(f.id);
+                let isEquipped = agentData.frameId === f.id;
+                let btnHtml = isEquipped ? `<button class="btn-equip equipped">EQUIPPED</button>` : 
+                              isOwned ? `<button class="btn-equip unlocked" onclick="equipItem('frame', '${f.id}')">EQUIP</button>` : 
+                              `<button class="btn-equip locked" disabled>🔒 LOCKED</button>`;
+                return `<div class="item-card ${isOwned ? '' : 'locked'}"><img src="avatars/${f.id}"><div class="item-name">${f.name}</div>${btnHtml}</div>`;
+            }).join('');
+        }
+
+        async function equipItem(type, itemId) {
+            document.getElementById('msg-box').innerText = 'EQUIPPING... ⏳';
+            try {
+                const url = `${WEB_APP_URL}?action=equip&agentId=${encodeURIComponent(agentData.agentId)}&equipType=${type}&itemName=${itemId}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    if(type === 'skin') agentData.avatarId = itemId;
+                    if(type === 'frame') agentData.frameId = itemId;
+                    localStorage.setItem('agentData', JSON.stringify(agentData));
+                    document.getElementById('msg-box').innerText = 'SUCCESS! ใส่ชุดเรียบร้อย';
+                    renderWardrobe();
+                }
+            } catch(e) { document.getElementById('msg-box').innerText = 'ERROR: เชื่อมต่อล้มเหลว'; }
+        }
+
+        renderWardrobe();
+    </script>
+</body>
+</html>
