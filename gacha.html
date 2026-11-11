@@ -5,52 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE GACHA VAULT</title>
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { max-width: 500px; width: 100%; background: #1a1a1a; border: 2px solid #8b0000; padding: 30px; box-shadow: 0 0 30px rgba(139,0,0,0.5); text-align: center; }
-        h1 { color: #d32f2f; letter-spacing: 2px; margin-top: 0; }
-        .ticket-box { background: #000; border: 1px dashed #00ff00; padding: 10px; margin-bottom: 25px; color: #00ff00; font-weight: bold; }
-        .vault-machine { font-size: 80px; margin: 20px 0; cursor: pointer; user-select: none; transition: 0.2s; }
-        .vault-machine:hover { transform: scale(1.05); }
-        .btn-pull { background: #d32f2f; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; letter-spacing: 1px; width: 100%; margin-top: 15px; }
-        .btn-pull:hover { background: #b71c1c; }
-        .btn-pull:disabled { background: #555; cursor: not-allowed; }
-        .btn-back { background: #333; color: #fff; border: none; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; font-family: inherit; }
-        .btn-back:hover { background: #555; }
-        #reward-display { margin-top: 20px; font-size: 18px; color: #ffeb3b; min-height: 60px; font-weight: bold; }
+        /* ================= CSS ธีมตู้กาชา ================= */
+        body { background-color: #0b0b0b; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-image: radial-gradient(circle, #222 1px, transparent 1px); background-size: 15px 15px; }
+        .container { max-width: 550px; width: 100%; background: #151515; border: 2px solid #ffb300; padding: 30px; box-shadow: 0 0 40px rgba(255,179,0,0.3); text-align: center; border-radius: 8px; position: relative; overflow: hidden; }
+        
+        /* ขอบเรืองแสงวิ่งรอบๆ ตู้ */
+        .container::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, rgba(255, 179, 0, 0.2), transparent 30%); animation: rotate 4s linear infinite; z-index: 0; pointer-events: none; }
+        @keyframes rotate { 100% { transform: rotate(1turn); } }
+        
+        .content-box { position: relative; z-index: 1; }
+        h1 { color: #ffeb3b; letter-spacing: 3px; margin-top: 0; font-size: 28px; text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); }
+        
+        .ticket-box { background: #000; border: 1px dashed #00ff00; padding: 12px; margin: 20px auto 30px auto; color: #00ff00; font-weight: bold; width: 80%; font-size: 16px; border-radius: 5px; }
+        .ticket-number { font-size: 24px; color: #ffeb3b; margin: 0 5px; }
+
+        .vault-machine { font-size: 90px; margin: 25px 0; cursor: pointer; user-select: none; transition: 0.2s; display: inline-block; filter: drop-shadow(0 0 15px rgba(255, 179, 0, 0.6)); }
+        .vault-machine:hover { transform: scale(1.1); filter: drop-shadow(0 0 25px rgba(255, 179, 0, 0.9)); }
+        .vault-machine:active { transform: scale(0.95); }
+
+        .btn-pull { background: #d32f2f; color: white; border: 2px solid #ff5252; padding: 16px 30px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; letter-spacing: 2px; width: 100%; margin-top: 20px; transition: 0.2s; border-radius: 5px; }
+        .btn-pull:hover { background: #b71c1c; box-shadow: 0 0 20px rgba(211,47,47,0.8); }
+        .btn-pull:disabled { background: #333; border-color: #555; color: #777; cursor: not-allowed; box-shadow: none; }
+        
+        .btn-back { background: transparent; color: #888; border: 1px dashed #555; padding: 12px; width: 100%; margin-top: 15px; cursor: pointer; font-family: inherit; transition: 0.2s; border-radius: 5px; font-weight: bold; }
+        .btn-back:hover { background: #222; color: #fff; border-color: #aaa; }
+
+        #reward-display { margin-top: 25px; font-size: 18px; color: #ffeb3b; min-height: 80px; font-weight: bold; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 5px; border: 1px solid #333; }
+        .reward-name { font-size: 24px; display: block; margin-top: 10px; text-shadow: 0 0 10px currentColor; }
+        
+        /* สีของระดับแรร์ */
+        .rarity-common { color: #00ff00; }
+        .rarity-rare { color: #00bfff; }
+        .rarity-epic { color: #b15bfa; }
+        .rarity-legendary { color: #ffb300; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>🔐 THE GACHA VAULT</h1>
-        <p style="color: #888; font-size: 13px;">ใช้ตั๋วสายลับเพื่อสุ่มหากระเป๋าไอเทมลับและสกินตัวละครระดับแรร์!</p>
-        
-        <div class="ticket-box">
-            🎟️ ตั๋วสุ่มคงเหลือ: <span id="ticket-count">0</span> ใบ
+        <div class="content-box">
+            <h1>🔐 THE GACHA VAULT</h1>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 5px;">ใช้ตั๋วสายลับ 1 ใบ เพื่อสุ่มหากระเป๋าไอเทมและสกินระดับแรร์!</p>
+            
+            <div class="ticket-box">
+                🎟️ ตั๋วสุ่มคงเหลือ: <span class="ticket-number" id="ticket-count">0</span> ใบ
+            </div>
+
+            <div class="vault-machine" id="vault-icon" onclick="pullGacha()">🎰</div>
+
+            <div id="reward-display">กดตู้กาชา หรือปุ่มด้านล่างเพื่อเสี่ยงโชค!</div>
+
+            <button class="btn-pull" id="pull-btn" onclick="pullGacha()">DRAW REWARD (ใช้ตั๋ว 1 ใบ)</button>
+            <button class="btn-back" onclick="goDashboard()">◀ กลับสู่ศูนย์บัญชาการ</button>
         </div>
-
-        <div class="vault-machine" id="vault-icon">🎰</div>
-
-        <div id="reward-display">กดปุ่มด้านล่างเพื่อเสี่ยงโชค!</div>
-
-        <button class="btn-pull" id="pull-btn" onclick="pullGacha()">DRAW REWARD (ใช้ตั๋ว 1 ใบ)</button>
-        <button class="btn-back" onclick="goDashboard()">◀ กลับสู่ศูนย์บัญชาการ</button>
     </div>
 
     <script>
+        // ================= ⚠️ ใส่ Web App URL ของคุณครูที่นี่ =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+        
+        // ================= ระบบเสียง =================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            let now = audioCtx.currentTime;
+            
+            if (type === 'spin') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'epic') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554.37, now + 0.1); osc.frequency.setValueAtTime(659.25, now + 0.2); osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            }
+        }
+
         let agentData = JSON.parse(localStorage.getItem('agentData'));
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (!agentData) { 
-                window.location.href = 'index.html'; 
-                return; 
-            }
+            if (!agentData) { window.location.href = 'index.html'; return; }
             updateTicketUI();
         });
 
         function updateTicketUI() {
-            // ดึงจำนวนตั๋วปัจจุบัน หากไม่มีให้เป็น 0
             let currentTickets = parseInt(agentData.tickets) || 0;
             document.getElementById('ticket-count').innerText = currentTickets;
             
@@ -67,7 +109,7 @@
         async function pullGacha() {
             let currentTickets = parseInt(agentData.tickets) || 0;
             if (currentTickets <= 0) { 
-                alert("ตั๋วหมด! ต้องไปทำภารกิจเคสต่างๆ เพื่อรับตั๋วเพิ่ม"); 
+                alert("ACCESS DENIED: ตั๋วหมด! ต้องไปทำภารกิจเคสต่างๆ เพื่อรับตั๋วเพิ่ม"); 
                 return; 
             }
 
@@ -77,28 +119,62 @@
             
             pullBtn.disabled = true;
             pullBtn.innerText = "DRAWING... ⏳";
+            playSound('spin');
             
-            // แอนิเมชันตู้สั่น
-            vault.style.transform = "rotate(15deg)";
-            setTimeout(() => vault.style.transform = "-rotate(15deg)", 100);
-            setTimeout(() => vault.style.transform = "rotate(0deg)", 200);
+            // แอนิเมชันตู้สั่นรัวๆ
+            vault.style.transform = "rotate(20deg) scale(1.1)";
+            setTimeout(() => vault.style.transform = "-rotate(20deg) scale(1.1)", 100);
+            setTimeout(() => vault.style.transform = "rotate(15deg) scale(1.1)", 200);
+            setTimeout(() => vault.style.transform = "-rotate(15deg) scale(1.1)", 300);
+            setTimeout(() => vault.style.transform = "rotate(0deg) scale(1)", 400);
 
-            // รายการของรางวัล
+            // ================= 🎁 รายการของรางวัล (สัดส่วน Drop Rate) =================
+            // เราจะใส่ไอเทมทั่วไปเยอะๆ เพื่อให้โอกาสออกบ่อยกว่าสกินแรร์
             const pool = [
-                { type: 'hint', amount: 2, name: '🔍 แว่นขยาย x2' },
-                { type: 'time', amount: 1, name: '⏳ นาฬิกาทราย x1' },
-                { type: 'file', amount: 1, name: '📁 แฟ้มลับคำศัพท์ x1' },
-                { type: 'skin', amount: 'elite_spy.png', name: '✨ สกินแรร์: Interpreter Spy' }
+                // ไอเทมช่วยเหลือ (Common)
+                { type: 'hint', amount: 2, name: '🔍 แว่นขยาย x2', rarity: 'rarity-common' },
+                { type: 'hint', amount: 2, name: '🔍 แว่นขยาย x2', rarity: 'rarity-common' },
+                { type: 'time', amount: 1, name: '⏳ นาฬิกาทราย x1', rarity: 'rarity-common' },
+                { type: 'time', amount: 1, name: '⏳ นาฬิกาทราย x1', rarity: 'rarity-common' },
+                { type: 'file', amount: 1, name: '📁 แฟ้มลับคำศัพท์ x1', rarity: 'rarity-common' },
+                
+                // กรอบรูป (Frames)
+                { type: 'frame', amount: 'common_frame.png', name: '🖼️ กรอบ: Bronze Frame', rarity: 'rarity-common' },
+                { type: 'frame', amount: 'elite_frame.png', name: '🖼️ กรอบ: Elite Frame', rarity: 'rarity-rare' },
+                { type: 'frame', amount: 'elite_platinum_frame.png', name: '🖼️ กรอบ: Platinum Frame', rarity: 'rarity-epic' },
+                { type: 'frame', amount: 'elite_cyber_frame.png', name: '🖼️ กรอบ: Cyber Frame', rarity: 'rarity-epic' },
+                { type: 'frame', amount: 'ultimate_frame.png', name: '✨ กรอบ: Ultimate Frame', rarity: 'rarity-legendary' },
+
+                // สกิน (Skins) - ชาย
+                { type: 'skin', amount: 'rookie_detective.png', name: '🕵️ สกิน: Rookie Detective', rarity: 'rarity-common' },
+                { type: 'skin', amount: 'interpreter_spy.png', name: '🕵️ สกิน: Interpreter Spy', rarity: 'rarity-rare' },
+                { type: 'skin', amount: 'master_translator.png', name: '🕵️ สกิน: Master Translator', rarity: 'rarity-epic' },
+                { type: 'skin', amount: 'elite_agent_neon.png', name: '✨ สกิน: Neon Agent', rarity: 'rarity-epic' },
+                { type: 'skin', amount: 'legendary_master.png', name: '🌟 สกินลับ: Legendary Master', rarity: 'rarity-legendary' },
+
+                // สกิน (Skins) - หญิง
+                { type: 'skin', amount: 'agent_female_scout.png', name: '👩‍💼 สกิน: Female Scout', rarity: 'rarity-common' },
+                { type: 'skin', amount: 'agent_female_detective.png', name: '👩‍💼 สกิน: Female Detective', rarity: 'rarity-rare' },
+                { type: 'skin', amount: 'agent_female_elite.png', name: '👩‍💼 สกิน: Female Elite', rarity: 'rarity-epic' },
+                { type: 'skin', amount: 'agent_female_epic.png', name: '✨ สกิน: Epic Agent', rarity: 'rarity-epic' },
+                { type: 'skin', amount: 'legendary_female_scholar.png', name: '🌟 สกินลับ: Legendary Scholar', rarity: 'rarity-legendary' }
             ];
 
-            // สุ่มของรางวัล
+            // สุ่มของรางวัล 1 ชิ้นจาก Pool
             const won = pool[Math.floor(Math.random() * pool.length)];
             
+            // เล่นเสียงถ้าได้ของระดับแรร์ขึ้นไป
+            if (won.rarity === 'rarity-epic' || won.rarity === 'rarity-legendary') {
+                setTimeout(() => playSound('epic'), 400);
+            }
+
             // แสดงผลการสุ่มบนหน้าจอก่อน
-            rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span style="color:#00ff00; font-size:22px;">${won.name}</span><br><span style="font-size:12px; color:#888;">กำลังบันทึกข้อมูล...</span>`;
+            setTimeout(() => {
+                rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span class="reward-name ${won.rarity}">${won.name}</span><br><span style="font-size:12px; color:#888; font-weight:normal;">กำลังอัปโหลดข้อมูลเข้าศูนย์บัญชาการ...</span>`;
+            }, 400);
 
             try {
-                // ส่งคำสั่งหักตั๋ว 1 ใบ และบันทึกของรางวัล
+                // ส่งคำสั่งหักตั๋ว 1 ใบ และบันทึกของรางวัลลง Google Sheets
                 const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=0&score=0&ticketGain=-1&rewardType=${won.type}&rewardAmount=${won.amount}`;
                 
                 const response = await fetch(url);
@@ -110,6 +186,8 @@
                     
                     if (won.type === 'skin') {
                         agentData.avatarId = won.amount;
+                    } else if (won.type === 'frame') {
+                        agentData.frameId = won.amount;
                     } else if (won.type === 'hint') {
                         agentData.itemHint = parseInt(agentData.itemHint || 0) + won.amount;
                     } else if (won.type === 'time') {
@@ -120,17 +198,16 @@
 
                     localStorage.setItem('agentData', JSON.stringify(agentData));
                     
-                    rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span style="color:#00ff00; font-size:22px;">${won.name}</span><br><span style="font-size:12px; color:#00aa00;">บันทึกข้อมูลสำเร็จ</span>`;
+                    rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span class="reward-name ${won.rarity}">${won.name}</span><br><span style="font-size:12px; color:#00aa00; font-weight:normal;">บันทึกข้อมูลสำเร็จ</span>`;
                 } else {
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + result.message);
-                    rewardBox.innerHTML = "กดปุ่มด้านล่างเพื่อเสี่ยงโชค!";
+                    alert("SYSTEM ERROR: เกิดข้อผิดพลาดในการบันทึกข้อมูล (" + result.message + ")");
+                    rewardBox.innerHTML = "กดตู้กาชา หรือปุ่มด้านล่างเพื่อเสี่ยงโชค!";
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
-                alert("ไม่สามารถติดต่อระบบฐานข้อมูลได้ โปรดลองอีกครั้ง");
-                rewardBox.innerHTML = "กดปุ่มด้านล่างเพื่อเสี่ยงโชค!";
+                alert("CONNECTION ERROR: ไม่สามารถติดต่อระบบฐานข้อมูลได้ โปรดลองอีกครั้ง");
+                rewardBox.innerHTML = "กดตู้กาชา หรือปุ่มด้านล่างเพื่อเสี่ยงโชค!";
             } finally {
-                // ไม่ว่าจะสำเร็จหรือพัง ก็ต้องอัปเดต UI และเปิดปุ่มกลับมา (ถ้ายังมีตั๋ว)
                 updateTicketUI();
             }
         }
