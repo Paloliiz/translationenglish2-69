@@ -13,6 +13,7 @@
         .vault-machine:hover { transform: scale(1.05); }
         .btn-pull { background: #d32f2f; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; letter-spacing: 1px; width: 100%; margin-top: 15px; }
         .btn-pull:hover { background: #b71c1c; }
+        .btn-pull:disabled { background: #555; cursor: not-allowed; }
         .btn-back { background: #333; color: #fff; border: none; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; font-family: inherit; }
         .btn-back:hover { background: #555; }
         #reward-display { margin-top: 20px; font-size: 18px; color: #ffeb3b; min-height: 60px; font-weight: bold; }
@@ -25,7 +26,7 @@
         <p style="color: #888; font-size: 13px;">ใช้ตั๋วสายลับเพื่อสุ่มหากระเป๋าไอเทมลับและสกินตัวละครระดับแรร์!</p>
         
         <div class="ticket-box">
-            🎟️ ตั๋วสุ่มคงเหลือ: <span id="ticket-count">1</span> ใบ
+            🎟️ ตั๋วสุ่มคงเหลือ: <span id="ticket-count">0</span> ใบ
         </div>
 
         <div class="vault-machine" id="vault-icon">🎰</div>
@@ -41,35 +42,48 @@
         let agentData = JSON.parse(localStorage.getItem('agentData'));
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (!agentData) { window.location.href = 'index.html'; return; }
-            // สมมติให้ในเครื่องจำลองตั๋วไว้ หรือดึงจาก agentData.tickets
+            if (!agentData) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
             updateTicketUI();
         });
 
         function updateTicketUI() {
-            // สมมติให้เริ่มต้นมีตั๋ว 3 ใบ (หรือผูกกับฐานข้อมูลจริง)
-            let tickets = agentData.tickets !== undefined ? agentData.tickets : 3;
-            document.getElementById('ticket-count').innerText = tickets;
-            if (tickets <= 0) {
-                document.getElementById('pull-btn').disabled = true;
-                document.getElementById('pull-btn').style.background = "#555";
+            // ดึงจำนวนตั๋วปัจจุบัน หากไม่มีให้เป็น 0
+            let currentTickets = parseInt(agentData.tickets) || 0;
+            document.getElementById('ticket-count').innerText = currentTickets;
+            
+            const pullBtn = document.getElementById('pull-btn');
+            if (currentTickets <= 0) {
+                pullBtn.disabled = true;
+                pullBtn.innerText = "NO TICKETS LEFT";
+            } else {
+                pullBtn.disabled = false;
+                pullBtn.innerText = "DRAW REWARD (ใช้ตั๋ว 1 ใบ)";
             }
         }
 
         async function pullGacha() {
-            let tickets = agentData.tickets !== undefined ? agentData.tickets : 3;
-            if (tickets <= 0) { alert("ตั๋วหมด! ต้องไปทำภารกิจเคสต่างๆ เพื่อรับตั๋วเพิ่ม"); return; }
+            let currentTickets = parseInt(agentData.tickets) || 0;
+            if (currentTickets <= 0) { 
+                alert("ตั๋วหมด! ต้องไปทำภารกิจเคสต่างๆ เพื่อรับตั๋วเพิ่ม"); 
+                return; 
+            }
 
             const vault = document.getElementById('vault-icon');
             const rewardBox = document.getElementById('reward-display');
             const pullBtn = document.getElementById('pull-btn');
             
             pullBtn.disabled = true;
+            pullBtn.innerText = "DRAWING... ⏳";
+            
+            // แอนิเมชันตู้สั่น
             vault.style.transform = "rotate(15deg)";
             setTimeout(() => vault.style.transform = "-rotate(15deg)", 100);
             setTimeout(() => vault.style.transform = "rotate(0deg)", 200);
 
-            // รายการของรางวัลในตู้กาชา (สัดส่วนเกลือ / แรร์)
+            // รายการของรางวัล
             const pool = [
                 { type: 'hint', amount: 2, name: '🔍 แว่นขยาย x2' },
                 { type: 'time', amount: 1, name: '⏳ นาฬิกาทราย x1' },
@@ -80,33 +94,44 @@
             // สุ่มของรางวัล
             const won = pool[Math.floor(Math.random() * pool.length)];
             
-            tickets--;
-            agentData.tickets = tickets;
-            
-            // อัปเดตข้อมูลไอเทมในเครื่อง
-            if (won.type === 'skin') {
-                agentData.avatarId = won.amount;
-            } else if (won.type === 'hint') {
-                agentData.itemHint = parseInt(agentData.itemHint || 0) + won.amount;
-            } else if (won.type === 'time') {
-                agentData.itemTime = parseInt(agentData.itemTime || 0) + won.amount;
-            } else if (won.type === 'file') {
-                agentData.itemFile = parseInt(agentData.itemFile || 0) + won.amount;
-            }
+            // แสดงผลการสุ่มบนหน้าจอก่อน
+            rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span style="color:#00ff00; font-size:22px;">${won.name}</span><br><span style="font-size:12px; color:#888;">กำลังบันทึกข้อมูล...</span>`;
 
-            localStorage.setItem('agentData', JSON.stringify(agentData));
-            updateTicketUI();
-
-            rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span style="color:#00ff00; font-size:22px;">${won.name}</span>`;
-            pullBtn.disabled = false;
-
-            // ส่งข้อมูลไปเซฟลง Google Sheets เงียบๆ
             try {
-            const response = await fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=0&score=0&ticketGain=-1&rewardType=${won.type}&rewardAmount=${won.amount}`);
-            const result = await response.json();
-            if(result.status === 'success') {
-                agentData.tickets = result.newTickets; // ซิงค์ตั๋วให้ตรงกับฐานข้อมูลเป๊ะๆ
-                localStorage.setItem('agentData', JSON.stringify(agentData));
+                // ส่งคำสั่งหักตั๋ว 1 ใบ และบันทึกของรางวัล
+                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=0&score=0&ticketGain=-1&rewardType=${won.type}&rewardAmount=${won.amount}`;
+                
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // อัปเดตข้อมูลบนหน้าจอให้ตรงกับเซิร์ฟเวอร์
+                    agentData.tickets = parseInt(result.newTickets) || 0;
+                    
+                    if (won.type === 'skin') {
+                        agentData.avatarId = won.amount;
+                    } else if (won.type === 'hint') {
+                        agentData.itemHint = parseInt(agentData.itemHint || 0) + won.amount;
+                    } else if (won.type === 'time') {
+                        agentData.itemTime = parseInt(agentData.itemTime || 0) + won.amount;
+                    } else if (won.type === 'file') {
+                        agentData.itemFile = parseInt(agentData.itemFile || 0) + won.amount;
+                    }
+
+                    localStorage.setItem('agentData', JSON.stringify(agentData));
+                    
+                    rewardBox.innerHTML = `🎉 ยินดีด้วย! คุณได้รับ:<br><span style="color:#00ff00; font-size:22px;">${won.name}</span><br><span style="font-size:12px; color:#00aa00;">บันทึกข้อมูลสำเร็จ</span>`;
+                } else {
+                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + result.message);
+                    rewardBox.innerHTML = "กดปุ่มด้านล่างเพื่อเสี่ยงโชค!";
+                }
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                alert("ไม่สามารถติดต่อระบบฐานข้อมูลได้ โปรดลองอีกครั้ง");
+                rewardBox.innerHTML = "กดปุ่มด้านล่างเพื่อเสี่ยงโชค!";
+            } finally {
+                // ไม่ว่าจะสำเร็จหรือพัง ก็ต้องอัปเดต UI และเปิดปุ่มกลับมา (ถ้ายังมีตั๋ว)
+                updateTicketUI();
             }
         }
 
