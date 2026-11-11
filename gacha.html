@@ -102,8 +102,12 @@
 
             // ส่งข้อมูลไปเซฟลง Google Sheets เงียบๆ
             try {
-                await fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=0&score=0&rewardType=${won.type}&rewardAmount=${won.amount}`);
-            } catch (e) { console.log("Sync error"); }
+            const response = await fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=0&score=0&ticketGain=-1&rewardType=${won.type}&rewardAmount=${won.amount}`);
+            const result = await response.json();
+            if(result.status === 'success') {
+                agentData.tickets = result.newTickets; // ซิงค์ตั๋วให้ตรงกับฐานข้อมูลเป๊ะๆ
+                localStorage.setItem('agentData', JSON.stringify(agentData));
+            }
         }
 
         function goDashboard() {
