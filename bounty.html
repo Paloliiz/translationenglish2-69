@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOUNTY BOARD - Mini Games</title>
+    <style>
+        body { 
+            background-color: #0b0b0b; color: #00ff00; font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px; min-height: 100vh;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px); 
+            background-size: 20px 20px; overflow-x: hidden; display: flex; flex-direction: column; align-items: center;
+        }
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none;
+        }
+        .container { position: relative; z-index: 1; max-width: 800px; width: 100%; background: rgba(15, 15, 15, 0.95); border: 2px solid #ff9800; padding: 25px; box-shadow: 0 0 30px rgba(255,152,0,0.2); border-radius: 8px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ff9800; padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { margin: 0; color: #ff9800; font-size: 24px; text-shadow: 0 0 10px rgba(255,152,0,0.5); }
+        .btn-abort { background: #222; color: #ff5252; border: 1px solid #ff5252; padding: 8px 15px; cursor: pointer; font-family: inherit; transition: 0.2s; font-weight: bold; }
+        .btn-abort:hover { background: #ff5252; color: #000; box-shadow: 0 0 10px rgba(255,82,82,0.6); }
+
+        .timer { font-size: 24px; font-weight: bold; color: #00bfff; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0,191,255,0.5); }
+        
+        /* Game Container */
+        .game-area { min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .instruction { color: #aaa; font-size: 16px; margin-bottom: 20px; text-align: center; }
+
+        /* Memory Game Styles */
+        .memory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 600px; }
+        .mem-card { background: #ff9800; color: #000; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.3s; border: 2px solid #e65100; }
+        .mem-card.flipped { background: #0a0a0a; color: #00ff00; font-size: 16px; border-color: #00ff00; }
+        .mem-card.matched { background: rgba(0,255,0,0.2); color: #00ff00; border-color: #00ff00; opacity: 0.6; cursor: default; }
+
+        /* Error Hunt / Choice Styles */
+        .error-sentence { font-size: 22px; color: #fff; padding: 20px; background: #000; border: 1px dashed #555; text-align: center; margin-bottom: 20px; width: 100%; }
+        .choice-btn { width: 100%; background: #111; color: #ffeb3b; border: 1px solid #ffeb3b; padding: 15px; margin-bottom: 10px; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: inherit; font-weight: bold; }
+        .choice-btn:hover { background: #ffeb3b; color: #000; }
+        .choice-btn.correct { background: #00ff00; color: #000; border-color: #00ff00; }
+        .choice-btn.wrong { background: #ff5252; color: #fff; border-color: #ff5252; }
+
+        /* Scramble Styles */
+        .scramble-drop { min-height: 60px; width: 100%; border: 2px dashed #00bfff; display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; box-sizing: border-box; margin-bottom: 20px; align-items: center; justify-content: center; background: rgba(0,191,255,0.05); }
+        .scramble-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .word-chip { background: #222; color: #fff; border: 1px solid #00bfff; padding: 10px 15px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.2s; user-select: none; }
+        .word-chip:hover { background: #00bfff; color: #000; }
+        .word-chip.used { opacity: 0.2; pointer-events: none; }
+
+        .reward-box { display: none; text-align: center; padding: 30px; }
+        .reward-box h2 { color: #00ff00; font-size: 32px; text-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .reward-text { font-size: 24px; color: #ffeb3b; margin: 20px 0; }
+        .btn-claim { background: #00aa00; color: #fff; padding: 15px 30px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🎯 BOUNTY BOARD</h1>
+            <button class="btn-abort" onclick="abortMission()">◀ ABORT</button>
+        </header>
+
+        <div class="timer" id="timer-display">TIME: 45s</div>
+
+        <div class="game-area" id="game-area">
+            <h2 style="color:#aaa;">SEARCHING FOR BOUNTY... ⏳</h2>
+        </div>
+
+        <div class="reward-box" id="reward-box">
+            <h2>BOUNTY CLEARED!</h2>
+            <div class="reward-text">+50 EXP & 1 🎟️ ตั๋วสุ่ม</div>
+            <button class="btn-claim" id="btn-claim" onclick="claimReward()">CLAIM REWARD & RETURN</button>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
+        
+        // ================= AUDIO SYSTEM =================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination); let now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.setValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'win') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2); osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            }
+        }
+
+        // ================= GAME LOGIC =================
+        let timeLeft = 45;
+        let timerInterval;
+        let gameType = Math.floor(Math.random() * 3); // สุ่มเกม 0, 1, 2
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            setTimeout(startGame, 1000);
+        });
+
+        function abortMission() { playSound('click'); window.location.href = 'index.html'; }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `TIME: ${timeLeft}s`;
+                if(timeLeft <= 10) document.getElementById('timer-display').style.color = '#ff5252';
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    playSound('wrong');
+                    alert("MISSION FAILED: หมดเวลา! คุณจะถูกส่งกลับศูนย์บัญชาการ");
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        }
+
+        function gameWon() {
+            clearInterval(timerInterval);
+            playSound('win');
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('timer-display').style.display = 'none';
+            document.getElementById('reward-box').style.display = 'block';
+        }
+
+        function startGame() {
+            startTimer();
+            if(gameType === 0) initMemoryGame();
+            else if(gameType === 1) initErrorHunt();
+            else initScramble();
+        }
+
+        // --- GAME 1: VOCAB DECODER (Memory Match) ---
+        let flippedCards = [];
+        let matchedCount = 0;
+        
+        function initMemoryGame() {
+            const area = document.getElementById('game-area');
+            const pairs = [
+                {en: 'Pad Thai', th: 'ผัดไทย (ชื่อเฉพาะ)'},
+                {en: 'River Prawn', th: 'กุ้งแม่น้ำ'},
+                {en: 'Residence', th: 'ที่พำนัก (Formal)'}
+            ];
+            let cards = [];
+            pairs.forEach((p, i) => {
+                cards.push({ id: i, text: p.en });
+                cards.push({ id: i, text: p.th });
+            });
+            // Shuffle
+            cards.sort(() => Math.random() - 0.5);
+
+            let html = `<div class="instruction">🧠 VOCAB DECODER: จับคู่คำศัพท์ภาษาอังกฤษกับคำแปลให้ครบ!</div><div class="memory-grid">`;
+            cards.forEach((c, idx) => {
+                html += `<div class="mem-card" data-id="${c.id}" data-idx="${idx}" onclick="flipCard(this, '${c.text}')">?</div>`;
+            });
+            html += `</div>`;
+            area.innerHTML = html;
+        }
+
+        function flipCard(el, text) {
+            if (el.classList.contains('flipped') || flippedCards.length >= 2) return;
+            playSound('click');
+            el.classList.add('flipped'); el.innerText = text;
+            flippedCards.push(el);
+
+            if (flippedCards.length === 2) {
+                if (flippedCards[0].getAttribute('data-id') === flippedCards[1].getAttribute('data-id')) {
+                    setTimeout(() => {
+                        playSound('correct');
+                        flippedCards[0].classList.add('matched'); flippedCards[1].classList.add('matched');
+                        flippedCards = []; matchedCount++;
+                        if (matchedCount === 3) gameWon();
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        playSound('wrong');
+                        flippedCards[0].classList.remove('flipped'); flippedCards[0].innerText = "?";
+                        flippedCards[1].classList.remove('flipped'); flippedCards[1].innerText = "?";
+                        flippedCards = [];
+                    }, 800);
+                }
+            }
+        }
+
+        // --- GAME 2: THE ERROR HUNT ---
+        function initErrorHunt() {
+            const area = document.getElementById('game-area');
+            const data = [
+                { s: "I like to eat Shrimp in the river.", q: "นักแปลมือใหม่แปลประโยคนี้ว่า 'ฉันชอบกินกุ้งในแม่น้ำ' จุดใดแปลเพี้ยนที่สุด?", options: ["ฉันชอบกิน", "กุ้งในแม่น้ำ", "ไม่มีข้อผิด"], ans: "กุ้งในแม่น้ำ" },
+                { s: "Hurry up, or you will be late.", q: "แปลว่า 'รีบหน่อย หรือ คุณจะสาย' จุดใดควรแก้ไขให้ลื่นไหล?", options: ["รีบหน่อย", "คุณจะสาย", "หรือ (ควรแก้เป็น มิฉะนั้น)"], ans: "หรือ (ควรแก้เป็น มิฉะนั้น)" }
+            ];
+            const q = data[Math.floor(Math.random() * data.length)];
+
+            let html = `<div class="instruction">🕵️ THE ERROR HUNT: จับผิดนักแปลฝึกหัด!</div>
+                        <div class="error-sentence">"${q.q}"</div>`;
+            q.options.sort(() => Math.random() - 0.5).forEach(opt => {
+                html += `<button class="choice-btn" onclick="checkError(this, '${opt}', '${q.ans}')">${opt}</button>`;
+            });
+            area.innerHTML = html;
+        }
+
+        function checkError(btn, selected, correct) {
+            if(selected === correct) {
+                playSound('correct');
+                btn.classList.add('correct');
+                setTimeout(gameWon, 1000);
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong');
+                timeLeft -= 10; // บทลงโทษ
+                document.getElementById('timer-display').style.color = '#ff5252';
+                setTimeout(() => btn.classList.remove('wrong'), 800);
+            }
+        }
+
+        // --- GAME 3: SENTENCE SCRAMBLE ---
+        let currentSentence = [];
+        let expectedSentence = [];
+
+        function initScramble() {
+            const area = document.getElementById('game-area');
+            const data = [
+                { words: ["This", "is", "the", "house", "where", "I", "grew", "up."] },
+                { words: ["I", "will", "make", "him", "an", "offer", "he", "can't", "refuse."] }
+            ];
+            expectedSentence = data[Math.floor(Math.random() * data.length)].words;
+            let shuffled = [...expectedSentence].sort(() => Math.random() - 0.5);
+
+            let html = `<div class="instruction">🧩 SENTENCE SCRAMBLE: เรียงประโยคให้ถูกต้อง! (คลิกที่คำศัพท์)</div>
+                        <div class="scramble-drop" id="drop-zone"></div>
+                        <div class="scramble-bank" id="word-bank">`;
+            shuffled.forEach((w, idx) => {
+                html += `<div class="word-chip" id="chip-${idx}" onclick="pickWord('${w}', 'chip-${idx}')">${w}</div>`;
+            });
+            html += `</div><button class="choice-btn" style="margin-top:20px; background:#00ff00; color:#000;" onclick="checkScramble()">VERIFY SENTENCE</button>`;
+            area.innerHTML = html;
+        }
+
+        function pickWord(word, id) {
+            playSound('click');
+            document.getElementById(id).classList.add('used');
+            currentSentence.push(word);
+            
+            const drop = document.getElementById('drop-zone');
+            let chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerText = word;
+            chip.onclick = () => { // คืนคำ
+                playSound('click');
+                document.getElementById(id).classList.remove('used');
+                chip.remove();
+                currentSentence = currentSentence.filter(w => w !== word);
+            };
+            drop.appendChild(chip);
+        }
+
+        function checkScramble() {
+            if (currentSentence.join(' ') === expectedSentence.join(' ')) {
+                playSound('correct'); gameWon();
+            } else {
+                playSound('wrong');
+                timeLeft -= 10;
+                document.getElementById('drop-zone').style.borderColor = '#ff5252';
+                setTimeout(() => document.getElementById('drop-zone').style.borderColor = '#00bfff', 800);
+            }
+        }
+
+        // ================= REWARD SYSTEM =================
+        async function claimReward() {
+            const btn = document.getElementById('btn-claim');
+            btn.innerText = "UPLOADING... ⏳"; btn.disabled = true;
+            try {
+                // ส่งคำสั่งเพิ่ม EXP 50 และ ตั๋ว 1 ใบ (caseNum = 0 คือไม่ใช่ด่านหลัก)
+                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&expGain=50&score=0&ticketGain=1`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    agentData.exp = parseInt(result.newExp);
+                    agentData.rank = result.newRank;
+                    agentData.tickets = parseInt(result.newTickets);
+                    localStorage.setItem('agentData', JSON.stringify(agentData));
+                    playSound('success');
+                    window.location.href = 'index.html';
+                }
+            } catch (e) { alert("CONNECTION ERROR"); btn.disabled = false; }
+        }
+    </script>
+</body>
+</html>
