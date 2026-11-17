@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGENT DOSSIER - ประวัติสายลับ</title>
+    <style>
+        body { 
+            background-color: #0b0b0b; color: #00ff00; font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px; min-height: 100vh;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px); 
+            background-size: 20px 20px; overflow-x: hidden; display: flex; flex-direction: column; align-items: center;
+        }
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; pointer-events: none;
+        }
+        .container { position: relative; z-index: 1; max-width: 800px; width: 100%; background: rgba(15, 15, 15, 0.95); border: 2px solid #ffb300; padding: 25px; box-shadow: 0 0 30px rgba(255,179,0,0.2); border-radius: 8px; box-sizing: border-box; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ffb300; padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { margin: 0; color: #ffb300; font-size: 22px; text-shadow: 0 0 10px rgba(255,179,0,0.5); letter-spacing: 2px; }
+        .btn-abort { background: #222; color: #ff5252; border: 1px solid #ff5252; padding: 8px 15px; cursor: pointer; font-family: inherit; transition: 0.2s; font-weight: bold; border-radius: 4px; }
+        .btn-abort:hover { background: #ff5252; color: #000; box-shadow: 0 0 10px rgba(255,82,82,0.6); }
+
+        /* Profile Header */
+        .profile-header { display: flex; gap: 20px; align-items: center; background: #0a0a0a; border: 1px solid #333; padding: 20px; margin-bottom: 20px; border-radius: 8px; flex-wrap: wrap; }
+        .avatar-box { width: 100px; height: 100px; border: 2px dashed #ffb300; background: #000; display: flex; align-items: center; justify-content: center; position: relative; border-radius: 5px; }
+        .avatar-box.premium { border: 2px solid #ffeb3b; box-shadow: 0 0 15px rgba(255, 235, 59, 0.6); }
+        .agent-info { flex: 1; }
+        .agent-info h2 { margin: 0 0 5px 0; color: #fff; font-size: 20px; }
+        .stat-text { color: #aaa; font-size: 14px; margin-bottom: 5px; font-family: 'Arial', sans-serif; }
+        .highlight { color: #00ff00; font-weight: bold; font-family: 'Courier New'; font-size: 16px; }
+
+        /* Sections */
+        .section-title { font-size: 16px; font-weight: bold; color: #fff; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; text-transform: uppercase; }
+        
+        /* Lists */
+        .task-list { list-style: none; padding: 0; margin: 0; font-family: 'Arial', sans-serif; font-size: 14px; }
+        .status-box { padding: 12px 15px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .status-done { background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; }
+        .status-pending { background: rgba(255, 82, 82, 0.1); border: 1px dashed #ff5252; color: #ff5252; }
+        .status-offline { background: rgba(255, 152, 0, 0.1); border: 1px dashed #ff9800; color: #ff9800; }
+        
+        .task-name { font-weight: bold; }
+        .task-points { font-size: 12px; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 20px; }
+
+        /* Advice Box */
+        .advice-box { background: #111; border-left: 5px solid #00bfff; padding: 20px; margin-top: 20px; border-radius: 0 8px 8px 0; font-family: 'Arial', sans-serif; line-height: 1.6; }
+        .advice-title { color: #00bfff; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .advice-text { color: #ccc; font-size: 14px; }
+        
+        .btn-action { width: 100%; background: #00bfff; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; border-radius: 4px; margin-top: 15px; transition: 0.2s; }
+        .btn-action:hover { background: #008cba; color: #fff; box-shadow: 0 0 15px rgba(0,191,255,0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🪪 AGENT DOSSIER</h1>
+            <button class="btn-abort" onclick="playSound('click'); window.location.href='index.html'">◀ BACK</button>
+        </header>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="avatar-box" id="avatar-box"></div>
+            <div class="agent-info">
+                <h2>AGENT <span id="display-name" style="color:#ffb300;">UNKNOWN</span></h2>
+                <div class="stat-text">RANK: <span class="highlight" id="display-rank">---</span></div>
+                <div class="stat-text">EXP: <span class="highlight" id="display-exp">0</span></div>
+                <div class="stat-text">APP SCORE: <span class="highlight" id="display-score">0 / 30</span></div>
+            </div>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="section-title">✅ งานที่ส่งแล้ว (COMPLETED)</div>
+        <ul class="task-list" id="completed-list">
+            <!-- Render via JS -->
+        </ul>
+
+        <!-- Pending Tasks -->
+        <div class="section-title">⏳ งานที่ค้างส่ง (PENDING & OFFLINE)</div>
+        <ul class="task-list" id="pending-list">
+            <!-- Render via JS -->
+        </ul>
+
+        <!-- Recommendation Box -->
+        <div class="advice-box">
+            <div class="advice-title">💡 คำแนะนำจากศูนย์บัญชาการ (วิธีเก็บคะแนนเพิ่ม)</div>
+            <div class="advice-text" id="advice-content">
+                กำลังวิเคราะห์ข้อมูลสายลับ...
+            </div>
+            <button class="btn-action" onclick="playSound('click'); window.location.href='bounty.html'">🎯 ลุย BOUNTY BOARD เพื่อฟาร์ม EXP</button>
+        </div>
+
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination); let now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            }
+        }
+
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            renderProfile();
+        });
+
+        function renderProfile() {
+            document.getElementById('display-name').innerText = agentData.firstName;
+            document.getElementById('display-rank').innerText = agentData.rank || "Rookie Agent";
+            
+            const exp = parseInt(agentData.exp) || 0;
+            document.getElementById('display-exp').innerText = exp;
+
+            // Render Avatar
+            const avatarBox = document.getElementById('avatar-box');
+            avatarBox.innerHTML = '';
+            if (agentData.avatarId && agentData.avatarId.trim() !== "") {
+                avatarBox.innerHTML += `<img src="avatars/${agentData.avatarId.trim()}" style="position: absolute; width:100%; height:100%; object-fit:cover; z-index: 1; border-radius:3px;">`;
+            }
+            if (agentData.frameId && agentData.frameId.trim() !== "") {
+                const frameName = agentData.frameId.trim();
+                avatarBox.innerHTML += `<img src="avatars/${frameName}" style="position: absolute; width:120%; height:120%; object-fit:contain; z-index: 2; pointer-events: none;">`;
+                if (frameName.toLowerCase().match(/elite|gold|cyber|platinum/)) avatarBox.classList.add('premium');
+            }
+
+            // Calculate App Score (Cases + Rank)
+            const currentCase = parseInt(agentData.currentCase) || 1;
+            const casesCompleted = currentCase > 6 ? 6 : currentCase - 1;
+            const casesScore = casesCompleted * 4; // ด่านละ 4 คะแนน
+            
+            let rankScore = 1;
+            let nextRank = "";
+            let expNeeded = 0;
+
+            if (exp >= 1200) { rankScore = 6; nextRank = "MAX"; expNeeded = 0; }
+            else if (exp >= 800) { rankScore = 5; nextRank = "Legendary Master"; expNeeded = 1200 - exp; }
+            else if (exp >= 450) { rankScore = 4; nextRank = "Master Translator"; expNeeded = 800 - exp; }
+            else if (exp >= 150) { rankScore = 3; nextRank = "Interpreter Spy"; expNeeded = 450 - exp; }
+            else { rankScore = 1; nextRank = "Field Agent"; expNeeded = 150 - exp; }
+
+            const totalAppScore = casesScore + rankScore;
+            document.getElementById('display-score').innerText = `${totalAppScore} / 30`;
+
+            // Render Lists
+            const completedList = document.getElementById('completed-list');
+            const pendingList = document.getElementById('pending-list');
+            let completedHtml = '';
+            let pendingHtml = '';
+
+            const casesNames = [
+                "CASE 01: The Broken Story", "CASE 02: Identify the Target", 
+                "CASE 03: Crime Scene Inv.", "CASE 04: The Secret Code",
+                "CASE 05: Translation Kitchen", "CASE 06: Director's Cut"
+            ];
+
+            // Render Cases
+            for (let i = 1; i <= 6; i++) {
+                if (i < currentCase) {
+                    completedHtml += `<li class="status-box status-done"><span class="task-name">✔ ${casesNames[i-1]}</span><span class="task-points">+4 pts</span></li>`;
+                } else {
+                    pendingHtml += `<li class="status-box status-pending"><span class="task-name">❌ ${casesNames[i-1]}</span><span class="task-points">รอทำภารกิจ (4 pts)</span></li>`;
+                }
+            }
+
+            // Add offline tasks to pending
+            pendingHtml += `<li class="status-box status-offline"><span class="task-name">📄 ใบงานสรุปความรู้ (ออฟไลน์)</span><span class="task-points">5 pts</span></li>`;
+            pendingHtml += `<li class="status-box status-offline"><span class="task-name">👥 โปรเจกต์กลุ่ม (ออฟไลน์)</span><span class="task-points">15 pts</span></li>`;
+
+            if(completedHtml === '') completedHtml = `<li style="color:#666; padding:10px;">ยังไม่มีภารกิจที่ทำสำเร็จ</li>`;
+            
+            completedList.innerHTML = completedHtml;
+            pendingList.innerHTML = pendingHtml;
+
+            // Render Advice
+            let adviceHtml = `ตอนนี้คุณได้คะแนนในแอปพลิเคชัน <b>${totalAppScore} จาก 30 คะแนน</b><br>`;
+            
+            if (casesCompleted < 6) {
+                adviceHtml += `<br>🔸 <b>สิ่งแรกที่ต้องทำ:</b> ไปเคลียร์คดีหลักให้ครบ (ได้คดีละ 4 คะแนน)`;
+            }
+            
+            if (nextRank === "MAX") {
+                adviceHtml += `<br>🔸 <b>คะแนนความขยัน:</b> สุดยอดมาก! คุณได้คะแนนยศ <b>เต็ม 6 คะแนน</b> แล้ว!`;
+            } else {
+                adviceHtml += `<br>🔸 <b>คะแนนความขยัน:</b> ตอนนี้คุณได้คะแนนยศ ${rankScore}/6 คะแนน <span style="color:#ffb300;">(ขาดอีก <b>${expNeeded} EXP</b> เพื่อเลื่อนขั้นเป็น <b>${nextRank}</b> และรับคะแนนเพิ่ม)</span>`;
+            }
+
+            document.getElementById('advice-content').innerHTML = adviceHtml;
+        }
+    </script>
+</body>
+</html>
