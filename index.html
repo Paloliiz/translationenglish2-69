@@ -57,7 +57,7 @@
         .stat-label { color: #888; display: inline-block; width: 65px; }
         .stat-value { color: #fff; font-weight: bold; }
         
-        /* ปุ่มทั้งหมดใน Agent Info */
+        /* ปุ่มจัดการโปรไฟล์ต่างๆ */
         .btn-sync { background: #111; border: 1px dashed #00bfff; color: #00bfff; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 8px; font-weight: bold; border-radius: 3px; transition: 0.2s; }
         .btn-sync:hover { background: #00bfff; color: #000; box-shadow: 0 0 10px rgba(0,191,255,0.5); }
         .btn-sync:disabled { background: #333; color: #777; border-color: #555; cursor: not-allowed; box-shadow: none; }
@@ -70,6 +70,9 @@
 
         .btn-profile { background: #111; border: 1px dashed #ffb300; color: #ffb300; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 5px; font-weight: bold; border-radius: 3px; transition: 0.2s; width: 100%; display: block; }
         .btn-profile:hover { background: #ffb300; color: #000; box-shadow: 0 0 10px rgba(255,179,0,0.5); }
+
+        .btn-bounty { width: 100%; padding: 15px; background: #ff9800; color: #000; font-family: inherit; font-size: 16px; font-weight: bold; border: 2px solid #e65100; cursor: pointer; border-radius: 4px; box-shadow: 0 0 15px rgba(255,152,0,0.4); text-transform: uppercase; margin-bottom: 20px; transition: 0.2s; }
+        .btn-bounty:hover { background: #ffb300; box-shadow: 0 0 20px rgba(255,152,0,0.7); transform: translateY(-2px); }
 
         .inventory-panel { border: 1px solid #333; padding: 15px; margin-bottom: 20px; background: #0a0a0a; }
         .inventory-panel h3 { margin-top: 0; color: #aaa; font-size: 14px; border-bottom: 1px dashed #333; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -163,12 +166,10 @@
                 </div>
             </div>
 
-            <!-- ปุ่ม BOUNTY BOARD (ย้ายมาไว้เด่นๆ) -->
-            <div style="margin-bottom: 20px;">
-                <button onclick="playSound('click'); window.location.href='bounty.html';" style="width: 100%; padding: 15px; background: #ff9800; color: #000; font-family: inherit; font-size: 16px; font-weight: bold; border: 2px solid #e65100; cursor: pointer; border-radius: 4px; box-shadow: 0 0 15px rgba(255,152,0,0.4); text-transform: uppercase;">
-                    🎯 เข้าสู่ BOUNTY BOARD (ภารกิจสุ่มรับตั๋วกาชา)
-                </button>
-            </div>
+            <!-- ปุ่ม BOUNTY BOARD -->
+            <button class="btn-bounty" onclick="playSound('click'); window.location.href='bounty.html';">
+                🎯 เข้าสู่ BOUNTY BOARD (ภารกิจสุ่มรับตั๋วกาชา)
+            </button>
 
             <div class="inventory-panel">
                 <h3>
@@ -190,11 +191,14 @@
                     <button class="btn-archive" onclick="playSound('click'); showSummary(2)">📖 Unit 2: Relative Clauses</button>
                     <button class="btn-archive" onclick="playSound('click'); showSummary(3)">📖 Unit 3: Passive Voice</button>
                     <button class="btn-archive" onclick="playSound('click'); showSummary(4)">📖 Unit 4: Sense-for-Sense</button>
+                    <button class="btn-archive" onclick="playSound('click'); showSummary(5)">📖 Unit 5: Context & Culture</button>
+                    <button class="btn-archive" onclick="playSound('click'); showSummary(6)">📖 Unit 6: Subtitles</button>
                 </div>
             </div>
 
             <div class="mission-board">
                 <h3>📌 ACTIVE CASE FILES</h3>
+                <!-- แสดงแฟ้มคดีทั้ง 6 คดี -->
                 <div class="case-list">
                     <div class="case-card" id="case-1" onclick="playSound('click'); startMission(1)">
                         <div>
@@ -227,6 +231,22 @@
                         </div>
                         <div class="case-status">STATUS: <span id="status-4">LOCKED</span></div>
                     </div>
+
+                    <div class="case-card" id="case-5" onclick="playSound('click'); startMission(5)">
+                        <div>
+                            <div class="case-title">CASE 05: Translation Kitchen</div>
+                            <div class="case-desc">Unit 5: Context & Culture</div>
+                        </div>
+                        <div class="case-status">STATUS: <span id="status-5">LOCKED</span></div>
+                    </div>
+
+                    <div class="case-card" id="case-6" onclick="playSound('click'); startMission(6)">
+                        <div>
+                            <div class="case-title">CASE 06: Director's Cut</div>
+                            <div class="case-desc">Unit 6: Subtitle Translation</div>
+                        </div>
+                        <div class="case-status">STATUS: <span id="status-6">LOCKED</span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -242,17 +262,18 @@
     </div>
 
     <script>
-        // ================= ⚠️ ใส่ Web App URL ของคุณครูที่นี่ =================
+        // ================= ⚠️ ใส่ Web App URL ที่นี่ =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (!audioCtx) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             let now = audioCtx.currentTime;
+            
             if (type === 'click') {
                 osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
                 gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
@@ -272,7 +293,9 @@
             1: `<h4>UNIT 1: TRANSLATING CONJUNCTIONS (ศิลปะการเชื่อมประโยค)</h4><ul><li><span class="highlight">กฎเหล็ก:</span> คำเชื่อม 1 คำในอังกฤษ แปลไทยได้หลายแบบ ขึ้นอยู่กับระดับความทางการและบริบท</li><li><b>AND (คล้อยตาม):</b> แปลว่า และ (ทางการ), กับ (พูด/สั้นๆ), หรือ แล้วก็/พอก็ (ลำดับเวลา)</li><li><b>BUT (ขัดแย้ง):</b> แปลว่า แต่ (ทั่วไป), แต่ก็ (เน้นว่ามีอุปสรรคแต่ทำได้), หรือ ทว่า (ทางการมาก/วรรณกรรม)</li><li><b>OR (ทางเลือก):</b> แปลว่า หรือ (ทั่วไป), หรือไม่ก็ (ทางเลือกอิสระ)</li><li><b>SO (เหตุผล):</b> แปลว่า ดังนั้น (ทางการ), จึง (กึ่งทางการ/กระชับ), หรือ ก็เลย (ภาษาพูดธรรมชาติที่สุด)</li><li><span class="highlight">การละคำเชื่อม:</span> ภาษาไทยไม่ชอบคำฟุ่มเฟือย ถ้าประโยคสั้นและเข้าใจง่าย ควรละคำเชื่อมเพื่อความลื่นไหล</li></ul>`,
             2: `<h4>UNIT 2: RELATIVE CLAUSES (ถอดรหัส ที่/ซึ่ง/อัน)</h4><ul><li><span class="highlight">กับดักคำแปล:</span> อย่าแปล who/which แบบตรงตัวว่า "ผู้ซึ่ง/อันซึ่ง" เพราะภาษาไทยจะฟังดูเป็นหุ่นยนต์พูด</li><li><b>วิธีที่ 1 (รวบประโยค):</b> ใช้คำว่า <b>"ที่"</b> เป็นหลัก (เช่น ผู้ชายที่ใส่เสื้อแดง)</li><li><b>วิธีที่ 2 (แยกประโยค):</b> ใช้คำว่า <b>"ซึ่ง"</b> มักใช้เมื่อประโยคขยายยาวมาก หรือขยายเหตุการณ์ทั้งประโยค</li><li><b>การแปล Where:</b> ใช้วิธีรวบ แปลว่า "ที่" ได้เลย ไม่ต้องใช้ "ที่ซึ่ง"</li><li><span class="highlight">เทคนิคมือโปร:</span> ให้แปลจากหลังไปหน้า (แปล Relative Clause ก่อน แล้วค่อยแปลคำนามหลัก)</li></ul>`,
             3: `<h4>UNIT 3: TRANSLATING PASSIVE VOICE (แปลเมื่อประธานไม่ได้ทำเอง)</h4><ul><li><span class="highlight">กฎเหล็ก:</span> ห้ามแปล Passive (โดนกระทำ) เป็นคำว่า "ถูก" เสมอไป</li><li><b>วิธีที่ 1 (ถูก):</b> ใช้กับความหมายแง่ลบ (เช่น ถูกขโมย)</li><li><b>วิธีที่ 2 (ได้รับการ):</b> ใช้กับความหมายแง่บวก หรือเป็นทางการ (เช่น ได้รับการอนุมัติ)</li><li><b>วิธีที่ 3 (ละประธาน):</b> ภาษาไทยนิยมใช้ที่สุด เมื่อกล่าวถึงความจริงทั่วไป (เช่น วัดนี้สร้างเมื่อ 500 ปีก่อน)</li><li><b>วิธีที่ 4 (สลับเป็น Active):</b> สลับให้ผู้กระทำขึ้นต้นประโยค มักใช้เมื่อมีคำว่า by...</li></ul>`,
-            4: `<h4>UNIT 4: SENSE-FOR-SENSE (แปลเอาความ)</h4><ul><li><span class="highlight">Word-for-Word:</span> การแปลตรงตัวทุกคำ เหมาะกับคู่มือเทคนิคหรือกฎหมาย</li><li><span class="highlight">Sense-for-Sense:</span> การแปลเอาความหมายแฝง ดูบริบทเป็นหลัก เพื่อให้ลื่นไหล (เช่น "I'm broke." แปลว่า ถังแตก)</li><li><b>Idioms (สำนวน):</b> ห้ามแปลตรงตัวเด็ดขาด</li><li><b>Phrasal Verbs (กริยาวลี):</b> กริยาตัวเดิมเปลี่ยนบุพบท ความหมายเปลี่ยน</li><li><b>ระดับภาษา (Register):</b> เลือกคำให้เหมาะกับผู้รับสาร เช่น คุยกับเพื่อนใช้ภาษาพูด คุยในที่ประชุมใช้ภาษาทางการ</li></ul>`
+            4: `<h4>UNIT 4: SENSE-FOR-SENSE (แปลเอาความ)</h4><ul><li><span class="highlight">Word-for-Word:</span> การแปลตรงตัวทุกคำ เหมาะกับคู่มือเทคนิคหรือกฎหมาย</li><li><span class="highlight">Sense-for-Sense:</span> การแปลเอาความหมายแฝง ดูบริบทเป็นหลัก เพื่อให้ลื่นไหล (เช่น "I'm broke." แปลว่า ถังแตก)</li><li><b>Idioms (สำนวน):</b> ห้ามแปลตรงตัวเด็ดขาด</li><li><b>Phrasal Verbs (กริยาวลี):</b> กริยาตัวเดิมเปลี่ยนบุพบท ความหมายเปลี่ยน</li><li><b>ระดับภาษา (Register):</b> เลือกคำให้เหมาะกับผู้รับสาร เช่น คุยกับเพื่อนใช้ภาษาพูด คุยในที่ประชุมใช้ภาษาทางการ</li></ul>`,
+            5: `<h4>UNIT 5: TRANSLATION KITCHEN (Context & Culture)</h4><ul><li><span class="highlight">ทับศัพท์ (Transliteration):</span> การถ่ายเสียง มักใช้กับชื่อเฉพาะ เมนูอาหารท้องถิ่น หรือคำที่แพร่หลายแล้ว (เช่น Pad Thai, Computer)</li><li><span class="highlight">ศัพท์บัญญัติ (Coinage):</span> การสร้างคำไทยขึ้นมาแทน มักใช้ในเอกสารราชการ/วิชาการ (เช่น วิสัยทัศน์ = Vision)</li><li><span class="highlight">ระดับภาษา (Register):</span> ต้องแปลให้ตรงกาลเทศะ เช่น "บ้าน" ถ้าจดหมายทางการใช้ "ที่พำนัก", "กิน" ถ้าทางการใช้ "บริโภค"</li><li><span class="highlight">ระวังการแปลตรงตัว:</span> กุ้งแม่น้ำ = River Prawn (ห้ามใช้ Shrimp in river), ไข่ลูกเขย = Son-in-law Eggs</li></ul>`,
+            6: `<h4>UNIT 6: DIRECTOR'S CUT (Subtitle & Media)</h4><ul><li><span class="highlight">ข้อจำกัดของซับไตเติ้ล:</span> ต้องสั้น กระชับ อ่านทัน (ไม่เกิน 2 บรรทัด และ 37-40 ตัวอักษร/บรรทัด)</li><li><span class="highlight">Reading Speed:</span> ความเร็วในการอ่านเฉลี่ยอยู่ที่ 12-15 ตัวอักษร/วินาที หากประโยคยาวไป ต้อง "ตัดทอนคำฟุ่มเฟือย"</li><li><span class="highlight">Transcreation (แปลสร้างสรรค์):</span> เน้นแปลให้สละสลวย จดจำง่าย สื่ออารมณ์มากกว่าแปลตรงตัว (ใช้บ่อยกับการแปลสโลแกน)</li><li><span class="highlight">บริบทและอารมณ์:</span> ต้องเลือกใช้คำให้เข้ากับ Mood & Tone ของหนัง และปรับระดับคำหยาบให้เหมาะกับบริบท/เรตติ้ง</li></ul>`
         };
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -387,7 +410,8 @@
 
             const currentCase = parseInt(data.currentCase) || 1;
             
-            for (let i = 1; i <= 4; i++) {
+            // Loop เช็กสถานะครบทั้ง 6 คดี
+            for (let i = 1; i <= 6; i++) {
                 const caseCard = document.getElementById(`case-${i}`);
                 const caseStatus = document.getElementById(`status-${i}`);
                 
