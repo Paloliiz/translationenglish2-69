@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOTICE BOARD - Translation Detective Agency</title>
+    <style>
+        body { 
+            background-color: #0b0b0b; color: #00ff00; font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px; min-height: 100vh;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px); 
+            background-size: 20px 20px; overflow-x: hidden; display: flex; flex-direction: column; align-items: center;
+        }
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none;
+        }
+        .container { position: relative; z-index: 1; max-width: 800px; width: 100%; background: rgba(15, 15, 15, 0.95); border: 2px solid #00ff00; padding: 25px; box-shadow: 0 0 30px rgba(0,255,0,0.2); border-radius: 8px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #00ff00; padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { margin: 0; color: #00ff00; font-size: 24px; text-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        .btn-abort { background: #222; color: #ff5252; border: 1px solid #ff5252; padding: 8px 15px; cursor: pointer; font-family: inherit; transition: 0.2s; font-weight: bold; }
+        .btn-abort:hover { background: #ff5252; color: #000; box-shadow: 0 0 10px rgba(255,82,82,0.6); }
+
+        .section-box { border: 1px solid #333; background: #0a0a0a; padding: 20px; margin-bottom: 20px; position: relative; }
+        .section-title { position: absolute; top: -12px; left: 20px; background: #0b0b0b; padding: 0 10px; color: #ffeb3b; font-weight: bold; font-size: 16px; border: 1px solid #333; }
+        
+        /* ตารางคะแนน */
+        .score-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-family: 'Arial', sans-serif; font-size: 14px; }
+        .score-table th, .score-table td { border: 1px solid #333; padding: 10px; text-align: left; }
+        .score-table th { background: #111; color: #00bfff; }
+        .score-table td { color: #ccc; }
+        .highlight-row { background: rgba(0,255,0,0.05); }
+        .points { color: #00ff00; font-weight: bold; text-align: center !important; }
+        
+        /* Rank Info */
+        .rank-info { display: flex; align-items: center; gap: 15px; margin-top: 15px; padding: 10px; border-bottom: 1px dashed #333; }
+        .rank-info:last-child { border-bottom: none; }
+        .rank-icon { font-size: 24px; width: 40px; text-align: center; }
+        .rank-details { flex: 1; font-family: 'Arial', sans-serif; }
+        .rank-name { font-weight: bold; color: #ffeb3b; font-size: 15px; }
+        .rank-req { font-size: 12px; color: #888; margin-top: 3px; }
+        .rank-score { font-weight: bold; color: #00ff00; font-size: 16px; }
+
+        /* Task Tracker */
+        .task-list { list-style: none; padding: 0; margin: 15px 0 0 0; font-family: 'Arial', sans-serif; font-size: 14px; }
+        .task-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid #222; }
+        .task-item:last-child { border-bottom: none; }
+        .task-type { padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+        .type-online { background: rgba(0, 191, 255, 0.2); color: #00bfff; border: 1px solid #00bfff; }
+        .type-offline { background: rgba(255, 152, 0, 0.2); color: #ff9800; border: 1px solid #ff9800; }
+        .task-name { flex: 1; color: #eee; }
+        .task-status { font-weight: bold; font-size: 12px; }
+        .status-pending { color: #ff5252; }
+        .status-done { color: #00ff00; }
+        
+        .alert-box { background: rgba(255, 82, 82, 0.1); border: 1px solid #ff5252; color: #ff5252; padding: 15px; text-align: center; font-family: 'Arial', sans-serif; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>📋 NOTICE BOARD</h1>
+            <button class="btn-abort" onclick="playSound('click'); window.location.href='index.html'">◀ BACK</button>
+        </header>
+
+        <div class="alert-box">
+            <b>⚠️ ประกาศจากศูนย์บัญชาการ:</b><br>
+            ยินดีต้อนรับสายลับทุกนายเข้าสู่วิชา "การแปลภาษาอังกฤษ 2"<br>โปรดอ่านเงื่อนไขการประเมินผลด้านล่างเพื่อผลประโยชน์ของตัวท่านเอง
+        </div>
+
+        <!-- Section 1: โครงสร้างคะแนน 100 คะแนน -->
+        <div class="section-box" style="margin-top: 30px;">
+            <div class="section-title">📊 โครงสร้างคะแนนประเมินผล (100 คะแนน)</div>
+            <table class="score-table">
+                <tr>
+                    <th style="width: 70%;">หมวดหมู่คะแนน (Category)</th>
+                    <th style="text-align: center;">คะแนน (Points)</th>
+                </tr>
+                <!-- คะแนนเก็บ -->
+                <tr style="background: rgba(255,255,255,0.05);"><td colspan="2" style="color: #fff; font-weight: bold;">📝 คะแนนเก็บระหว่างเรียน (Formative: 50 คะแนน)</td></tr>
+                <tr>
+                    <td>- ภารกิจแปลภาษา (Case 1 - 6) ในเว็บแอป</td>
+                    <td class="points">24</td>
+                </tr>
+                <tr>
+                    <td>- ยศสายลับ (Agent Rank) ได้รับจาก EXP ในแอป</td>
+                    <td class="points">6</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>- งานกลุ่ม (ออฟไลน์ / ปฏิบัติในห้องเรียน)</td>
+                    <td class="points">15</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>- ใบงานสรุปความรู้ (ออฟไลน์)</td>
+                    <td class="points">5</td>
+                </tr>
+                
+                <!-- คะแนนสอบ -->
+                <tr style="background: rgba(255,255,255,0.05);"><td colspan="2" style="color: #fff; font-weight: bold;">🎓 คะแนนสอบ (Summative: 50 คะแนน)</td></tr>
+                <tr>
+                    <td>- สอบกลางภาค (Midterm Exam)</td>
+                    <td class="points">20</td>
+                </tr>
+                <tr>
+                    <td>- สอบปลายภาค (Final Exam)</td>
+                    <td class="points">30</td>
+                </tr>
+                <tr style="border-top: 2px solid #00ff00;">
+                    <td style="color: #00ff00; font-weight: bold; text-align: right;">รวมทั้งหมด (TOTAL)</td>
+                    <td style="color: #00ff00; font-weight: bold; text-align: center; font-size: 16px;">100</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Section 2: ข้อมูล Rank และคะแนนที่ได้ -->
+        <div class="section-box" style="margin-top: 30px;">
+            <div class="section-title">🏅 ยศสายลับ & คะแนนความขยัน (6 คะแนน)</div>
+            <div style="font-family: 'Arial', sans-serif; font-size: 13px; color: #888; margin-bottom: 15px;">
+                สะสม EXP จากการทำข้อสอบหลัก และการเล่นมินิเกมใน BOUNTY BOARD เพื่อเลื่อนขั้นรับคะแนนเพิ่ม
+            </div>
+            
+            <div class="rank-info">
+                <div class="rank-icon">🌟</div>
+                <div class="rank-details">
+                    <div class="rank-name" style="color: #ff9800;">Legendary Master</div>
+                    <div class="rank-req">ต้องการ 1,200 EXP ขึ้นไป (สุดยอดนักแปล)</div>
+                </div>
+                <div class="rank-score">+6 คะแนน</div>
+            </div>
+            
+            <div class="rank-info">
+                <div class="rank-icon">✨</div>
+                <div class="rank-details">
+                    <div class="rank-name" style="color: #b15bfa;">Master Translator</div>
+                    <div class="rank-req">ต้องการ 800 EXP ขึ้นไป</div>
+                </div>
+                <div class="rank-score">+5 คะแนน</div>
+            </div>
+            
+            <div class="rank-info">
+                <div class="rank-icon">🕵️</div>
+                <div class="rank-details">
+                    <div class="rank-name" style="color: #00bfff;">Interpreter Spy</div>
+                    <div class="rank-req">ต้องการ 450 EXP ขึ้นไป</div>
+                </div>
+                <div class="rank-score">+4 คะแนน</div>
+            </div>
+            
+            <div class="rank-info">
+                <div class="rank-icon">🏃</div>
+                <div class="rank-details">
+                    <div class="rank-name" style="color: #4caf50;">Field Agent</div>
+                    <div class="rank-req">ต้องการ 150 EXP ขึ้นไป</div>
+                </div>
+                <div class="rank-score">+3 คะแนน</div>
+            </div>
+            
+            <div class="rank-info">
+                <div class="rank-icon">🔰</div>
+                <div class="rank-details">
+                    <div class="rank-name" style="color: #ccc;">Rookie Agent</div>
+                    <div class="rank-req">เริ่มต้น (0 EXP)</div>
+                </div>
+                <div class="rank-score">+1 คะแนน</div>
+            </div>
+        </div>
+
+        <!-- Section 3: Task Tracker -->
+        <div class="section-box" style="margin-top: 30px;">
+            <div class="section-title">✅ ระบบติดตามงาน (TASK TRACKER)</div>
+            <div style="font-family: 'Arial', sans-serif; font-size: 13px; color: #888;">
+                สถานะของงานออนไลน์จะอัปเดตอัตโนมัติ ส่วนงานออฟไลน์ให้เช็กกับคุณครูผู้สอน
+            </div>
+            
+            <ul class="task-list" id="task-tracker">
+                <!-- ข้อมูลถูกเติมด้วย JavaScript -->
+                <li style="text-align:center; padding: 20px; color: #666;">กำลังซิงค์ข้อมูลภารกิจ...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination); let now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            }
+        }
+
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            renderTaskTracker();
+        });
+
+        function renderTaskTracker() {
+            const list = document.getElementById('task-tracker');
+            const currentCase = parseInt(agentData.currentCase) || 1;
+            
+            const tasks = [
+                { name: "เคลียร์ภารกิจ CASE 01: The Broken Story", type: "ONLINE", isDone: currentCase > 1 },
+                { name: "เคลียร์ภารกิจ CASE 02: Identify the Target", type: "ONLINE", isDone: currentCase > 2 },
+                { name: "เคลียร์ภารกิจ CASE 03: Crime Scene Inv.", type: "ONLINE", isDone: currentCase > 3 },
+                { name: "เคลียร์ภารกิจ CASE 04: The Secret Code", type: "ONLINE", isDone: currentCase > 4 },
+                { name: "ส่งใบงานสรุปความรู้ (5 คะแนน)", type: "OFFLINE", isDone: false },
+                { name: "ส่งชิ้นงานกลุ่ม Project การแปล (15 คะแนน)", type: "OFFLINE", isDone: false }
+            ];
+
+            let html = "";
+            tasks.forEach(task => {
+                let typeClass = task.type === "ONLINE" ? "type-online" : "type-offline";
+                let statusHtml = task.isDone 
+                    ? `<span class="task-status status-done">✔ COMPLETED</span>` 
+                    : `<span class="task-status status-pending">⏳ PENDING</span>`;
+                
+                // ถืองานออฟไลน์ให้ขึ้นว่าต้องเช็คกับครู
+                if(task.type === "OFFLINE") {
+                    statusHtml = `<span class="task-status" style="color:#aaa;">รอยืนยันจากครู</span>`;
+                }
+
+                html += `
+                    <li class="task-item">
+                        <span class="task-type ${typeClass}">${task.type}</span>
+                        <span class="task-name">${task.name}</span>
+                        ${statusHtml}
+                    </li>
+                `;
+            });
+            list.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
