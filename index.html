@@ -57,12 +57,19 @@
         .stat-label { color: #888; display: inline-block; width: 65px; }
         .stat-value { color: #fff; font-weight: bold; }
         
+        /* ปุ่มทั้งหมดใน Agent Info */
         .btn-sync { background: #111; border: 1px dashed #00bfff; color: #00bfff; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 8px; font-weight: bold; border-radius: 3px; transition: 0.2s; }
         .btn-sync:hover { background: #00bfff; color: #000; box-shadow: 0 0 10px rgba(0,191,255,0.5); }
         .btn-sync:disabled { background: #333; color: #777; border-color: #555; cursor: not-allowed; box-shadow: none; }
         
         .btn-wardrobe { background: #111; border: 1px dashed #ffeb3b; color: #ffeb3b; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 5px; font-weight: bold; border-radius: 3px; transition: 0.2s; width: 100%; display: block; }
         .btn-wardrobe:hover { background: #ffeb3b; color: #000; box-shadow: 0 0 10px rgba(255,235,59,0.5); }
+
+        .btn-notice { background: #111; border: 1px dashed #00ff00; color: #00ff00; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 5px; font-weight: bold; border-radius: 3px; transition: 0.2s; width: 100%; display: block; }
+        .btn-notice:hover { background: #00ff00; color: #000; box-shadow: 0 0 10px rgba(0,255,0,0.5); }
+
+        .btn-profile { background: #111; border: 1px dashed #ffb300; color: #ffb300; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 11px; margin-top: 5px; font-weight: bold; border-radius: 3px; transition: 0.2s; width: 100%; display: block; }
+        .btn-profile:hover { background: #ffb300; color: #000; box-shadow: 0 0 10px rgba(255,179,0,0.5); }
 
         .inventory-panel { border: 1px solid #333; padding: 15px; margin-bottom: 20px; background: #0a0a0a; }
         .inventory-panel h3 { margin-top: 0; color: #aaa; font-size: 14px; border-bottom: 1px dashed #333; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -150,11 +157,13 @@
                     <!-- ปุ่มห้องเปลี่ยนชุด (Wardrobe) -->
                     <button class="btn-wardrobe" onclick="playSound('click'); window.location.href='wardrobe.html';">👔 ห้องเปลี่ยนชุด</button>
                     <!-- ปุ่มกระดานประกาศและคะแนน -->
-                    <button class="btn-wardrobe" style="border-color: #00ff00; color: #00ff00; margin-top: 5px;" onclick="playSound('click'); window.location.href='notice.html';">📋 ประกาศ & เช็กคะแนนงาน</button>
+                    <button class="btn-notice" onclick="playSound('click'); window.location.href='notice.html';">📋 ประกาศ & เช็กคะแนนงาน</button>
+                    <!-- ปุ่มแฟ้มประวัติส่วนตัว -->
+                    <button class="btn-profile" onclick="playSound('click'); window.location.href='profile.html';">🪪 แฟ้มประวัติ & ชี้เป้าคะแนน</button>
                 </div>
             </div>
 
-            <!-- ปุ่ม BOUNTY BOARD -->
+            <!-- ปุ่ม BOUNTY BOARD (ย้ายมาไว้เด่นๆ) -->
             <div style="margin-bottom: 20px;">
                 <button onclick="playSound('click'); window.location.href='bounty.html';" style="width: 100%; padding: 15px; background: #ff9800; color: #000; font-family: inherit; font-size: 16px; font-weight: bold; border: 2px solid #e65100; cursor: pointer; border-radius: 4px; box-shadow: 0 0 15px rgba(255,152,0,0.4); text-transform: uppercase;">
                     🎯 เข้าสู่ BOUNTY BOARD (ภารกิจสุ่มรับตั๋วกาชา)
@@ -233,6 +242,7 @@
     </div>
 
     <script>
+        // ================= ⚠️ ใส่ Web App URL ของคุณครูที่นี่ =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
