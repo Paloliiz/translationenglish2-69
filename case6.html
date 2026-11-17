@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASE 06: Director's Cut</title>
+    <style>
+        body { 
+            background-color: #0b0b0b; color: #00ff00; font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px; min-height: 100vh;
+            background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px); 
+            background-size: 20px 20px; overflow-x: hidden;
+        }
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none;
+        }
+        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; background: rgba(15, 15, 15, 0.95); border: 2px solid #00ff00; padding: 25px; box-shadow: 0 0 30px rgba(0,255,0,0.2); }
+        
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #00ff00; padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { margin: 0; color: #00ff00; font-size: 20px; text-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        .btn-abort { background: #222; color: #ff5252; border: 1px solid #ff5252; padding: 8px 15px; cursor: pointer; font-family: inherit; transition: 0.2s; }
+        .btn-abort:hover { background: #ff5252; color: #000; box-shadow: 0 0 10px rgba(255,82,82,0.6); }
+        
+        /* Progress & Timer */
+        .status-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .progress-container { width: 60%; background: #050505; height: 12px; border-radius: 2px; border: 1px solid #333; }
+        .progress-bar { height: 100%; background: #00ff00; width: 0%; transition: 0.3s; box-shadow: 0 0 10px rgba(0,255,0,0.6); }
+        
+        .timer-container { width: 35%; text-align: right; font-size: 18px; font-weight: bold; color: #00bfff; text-shadow: 0 0 8px rgba(0,191,255,0.6); }
+        .timer-bar-bg { width: 100%; background: #222; height: 6px; margin-top: 5px; border-radius: 2px; overflow: hidden; }
+        .timer-bar { height: 100%; background: #00bfff; width: 100%; transition: width 1s linear, background-color 0.3s; }
+        
+        .btn-item { background: #ffb300; color: #000; border: 1px solid #ffe57f; padding: 5px 10px; font-size: 12px; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 5px; border-radius: 3px; display: none; }
+        .btn-item:hover { background: #ffd54f; }
+
+        .mission-title { color: #ffeb3b; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #ffeb3b; padding-left: 10px; text-shadow: 0 0 5px rgba(255,235,59,0.5); margin-top: 15px; }
+        .instruction { color: #aaa; font-size: 14px; margin-bottom: 20px; font-family: 'Arial', sans-serif; line-height: 1.5; }
+
+        .case-file { background: #0a0a0a; border: 1px solid #444; padding: 20px; font-family: 'Arial', sans-serif; font-size: 18px; line-height: 2; margin-bottom: 20px; color: #fff; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+        .drop-zone { display: inline-block; min-width: 90px; height: 30px; padding: 0 10px; background: #000; border: 2px dashed #00ff00; text-align: center; vertical-align: middle; font-weight: bold; color: #ffeb3b; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .drop-zone.filled { border-style: solid; background: rgba(0,255,0,0.1); box-shadow: 0 0 10px rgba(0,255,0,0.3); }
+        
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; background: #050505; padding: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        .word-piece { background: #111; color: #00ff00; border: 1px solid #00ff00; padding: 10px 20px; font-weight: bold; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; border-radius: 4px; transition: 0.2s; }
+        .word-piece:hover { background: #00ff00; color: #000; }
+        .word-piece.used { opacity: 0.2; pointer-events: none; }
+
+        .choice-btn { display: block; width: 100%; background: #0a0a0a; border: 1px solid #00ff00; color: #00ff00; padding: 16px; margin-bottom: 12px; cursor: pointer; font-family: 'Arial', sans-serif; font-size: 16px; text-align: left; transition: 0.2s; border-radius: 4px; }
+        .choice-btn:hover { background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 10px rgba(0,255,0,0.3); transform: translateX(5px); }
+        .choice-btn.correct { background: #00aa00; color: #fff; border-color: #00ff00; transform: translateX(0); }
+        .choice-btn.wrong { background: rgba(255,82,82,0.2); color: #ff5252; border-color: #ff5252; transform: translateX(0); }
+
+        .btn-action { display: block; width: 100%; background: #00ff00; color: #000; border: none; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 15px; transition: 0.2s; }
+        .btn-action:hover { background: #00cc00; box-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .btn-action:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
+
+        .result-box { text-align: center; padding: 40px 20px; display: none; }
+        .result-box h2 { color: #00ff00; font-size: 32px; text-shadow: 0 0 15px rgba(0,255,0,0.6); }
+        .exp-reward { font-size: 45px; color: #ffeb3b; margin: 20px 0; text-shadow: 0 0 20px rgba(255,235,59,0.6); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>CASE 06: DIRECTOR'S CUT</h1>
+            <button class="btn-abort" onclick="playSound('click'); window.location.href='index.html'">◀ ABORT</button>
+        </header>
+
+        <div class="status-panel">
+            <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+            <div class="timer-container">
+                <div id="timer-text">TIME: 30s</div>
+                <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar"></div></div>
+                <button id="btn-use-time" class="btn-item" onclick="useTimeItem()">⏳ ใช้ 1 นาฬิกาทราย (+15s)</button>
+            </div>
+        </div>
+
+        <div id="mission-view">
+            <div id="mission-title" class="mission-title"></div>
+            <div id="mission-instruction" class="instruction"></div>
+            <div id="mission-content"></div>
+            <div id="word-bank" class="word-bank" style="display:none;"></div>
+            <button id="btn-action" class="btn-action" style="display:none;" onclick="checkFill()">VERIFY EVIDENCE</button>
+            <div id="mission-msg" style="text-align:center; margin-top:15px; font-weight:bold; min-height:20px; font-size:18px;"></div>
+        </div>
+
+        <div id="result-view" class="result-box">
+            <h2>CASE 06 CLEARED!</h2>
+            <p style="color:#aaa;">ยินดีด้วย! คุณเคลียร์แฟ้มคดีหลักครบทุกคดีแล้ว!</p>
+            <div class="exp-reward">+150 EXP & 1 🎟️ ตั๋วสุ่ม!</div>
+            <button id="btn-save" class="btn-action" onclick="saveAndReturn()" style="background:#00aa00; color:#fff;">SAVE & RETURN TO AGENCY</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= ⚠️ ใส่ Web App URL ที่นี่ =================
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby4Ji-VVWI2IOzYvTcdwltergbdWGfxru32TjoPCMQxc_EZeiTGT_9XAVcAVrjhXj_wpQ/exec';
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            let now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.setValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'clear') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2); osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            } else if (type === 'tick') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.02, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            }
+        }
+
+        // ================= ฐานข้อมูลด่าน Case 6 (10 ข้อ) =================
+        const missions = [
+            { type: 'choice', title: 'กฎเหล็กของซับไตเติ้ล', instruction: 'ข้อจำกัดสำคัญที่สุดของการแปลซับไตเติ้ลคือ?', choices: [{ text: 'A. พื้นที่และเวลา (Space & Time)', correct: true }, { text: 'B. คำศัพท์ยาก', correct: false }, { text: 'C. สีของตัวอักษร', correct: false }] },
+            { type: 'choice', title: 'จำกัดพื้นที่', instruction: 'ใน 1 บรรทัดของซับไตเติ้ล ไม่ควรเกินกี่ตัวอักษร?', choices: [{ text: 'A. 20 ตัว', correct: false }, { text: 'B. 37-40 ตัว', correct: true }, { text: 'C. 100 ตัว', correct: false }] },
+            { type: 'fill', title: 'เติมคำฟุ่มเฟือย', instruction: 'เติมคำที่ขาดหายไปให้ประโยคสมบูรณ์ (แต่อย่าให้เกินเวลา)', sentence: 'Reading Speed เฉลี่ยของคนดูซับคือ {slot:12-15} ตัว/วินาที', choices: ['5', '12-15', '30'] },
+            { type: 'choice', title: 'ศิลปะการแปลสโลแกน', instruction: 'การแปลสโลแกน (Slogan) ควรเน้นสิ่งใด?', choices: [{ text: 'A. ความถูกต้องทางไวยากรณ์', correct: false }, { text: 'B. ความสละสลวยและจดจำง่าย', correct: true }, { text: 'C. แปลตรงตัวทุกคำ', correct: false }] },
+            { type: 'fill', title: 'ถอดรหัสคำหยาบ', instruction: 'เติมคำอธิบายที่ถูกต้อง', sentence: 'ในการแปลภาพยนตร์ คำหยาบควรปรับระดับให้เหมาะกับ {slot:บริบท}', choices: ['บริบท', 'ความยาว', 'ผู้กำกับ'] },
+            { type: 'choice', title: 'Transcreation คืออะไร', instruction: 'คำว่า "Transcreation" หมายถึงอะไร?', choices: [{ text: 'A. การแปลสร้างสรรค์ (Translation + Creation)', correct: true }, { text: 'B. การแปลด้วยเครื่องจักร', correct: false }, { text: 'C. การแปลเอกสารราชการ', correct: false }] },
+            { type: 'fill', title: 'ค้นหาจังหวะที่เหมาะสม', instruction: 'เติมคำที่ขาดหายไป', sentence: 'ถ้าตัวละครพูดเร็วมาก นักแปลควร {slot:สรุป} ใจความ', choices: ['สรุป', 'แปลทุกพยางค์', 'ตัดทิ้ง'] },
+            { type: 'choice', title: 'แปลบริบทอารมณ์', instruction: 'ประโยค "Watch out!" ในหนังแอคชั่น แปลว่า?', choices: [{ text: 'A. ระวัง!', correct: true }, { text: 'B. ดูข้างนอกสิ', correct: false }, { text: 'C. ดูออกไหม', correct: false }] },
+            { type: 'fill', title: 'เติมเต็มอรรถรส', instruction: 'ถ้าแปลผิดบริบท คนดูจะไม่เข้าใจ {slot:มุก} และเสียอรรถรส', sentence: 'ถ้าแปลผิดบริบท คนดูจะไม่เข้าใจ {slot:มุก} และเสียอรรถรส', choices: ['มุก', 'ไวยากรณ์', 'ตัวละคร'] },
+            { type: 'choice', title: 'บททดสอบสุดท้าย Unit 6', instruction: 'หัวใจสำคัญของการแปลสื่อ (Media Translation) คืออะไร?', choices: [{ text: 'A. แปลให้ถูกต้อง 100%', correct: false }, { text: 'B. แปลเพื่อคนดู (Audience-Centered)', correct: true }, { text: 'C. แปลให้เร็วที่สุด', correct: false }] }
+        ];
+
+        let currentIndex = 0;
+        let activeSlot = null;
+        let timerInterval;
+        let timeLeft = 30;
+        let agentData = JSON.parse(localStorage.getItem('agentData'));
+        let isChecking = false;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!agentData) { window.location.href = 'index.html'; return; }
+            if (parseInt(agentData.currentCase) < 6) { alert("ACCESS DENIED!"); window.location.href = 'index.html'; return; }
+            if (parseInt(agentData.currentCase) > 6) { alert("ALREADY CLEARED!"); window.location.href = 'index.html'; return; }
+            loadMission(currentIndex);
+        });
+
+        // ================= ระบบจับเวลา =================
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 30;
+            updateTimerUI();
+            
+            const btnTime = document.getElementById('btn-use-time');
+            if (parseInt(agentData.itemTime) > 0) {
+                btnTime.style.display = 'inline-block';
+            } else {
+                btnTime.style.display = 'none';
+            }
+
+            timerInterval = setInterval(() => {
+                if(isChecking) return;
+                
+                timeLeft--;
+                updateTimerUI();
+                
+                if (timeLeft <= 5 && timeLeft > 0) playSound('tick');
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const timeText = document.getElementById('timer-text');
+            const timeBar = document.getElementById('timer-bar');
+            timeText.innerText = `TIME: ${timeLeft}s`;
+            
+            let percentage = (timeLeft / 30) * 100;
+            if(percentage > 100) percentage = 100;
+            timeBar.style.width = `${percentage}%`;
+
+            if (timeLeft <= 10) {
+                timeText.style.color = '#ff5252';
+                timeBar.style.backgroundColor = '#ff5252';
+            } else {
+                timeText.style.color = '#00bfff';
+                timeBar.style.backgroundColor = '#00bfff';
+            }
+        }
+
+        function useTimeItem() {
+            if (parseInt(agentData.itemTime) > 0 && !isChecking) {
+                playSound('success');
+                agentData.itemTime = parseInt(agentData.itemTime) - 1;
+                localStorage.setItem('agentData', JSON.stringify(agentData)); 
+                
+                timeLeft += 15;
+                updateTimerUI();
+                
+                if (parseInt(agentData.itemTime) <= 0) {
+                    document.getElementById('btn-use-time').style.display = 'none';
+                }
+                
+                fetch(`${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=0&rewardType=time&rewardAmount=-1`).catch(e=>{});
+            }
+        }
+
+        function handleTimeOut() {
+            isChecking = true;
+            playSound('wrong');
+            document.querySelectorAll('.choice-btn, .drop-zone, .word-piece, .btn-action').forEach(b => b.style.pointerEvents = 'none');
+            const msg = document.getElementById('mission-msg');
+            msg.innerText = 'TIME OUT! หมดเวลา! ข้ามข้อถัดไป'; msg.style.color = '#ff5252';
+            
+            setTimeout(() => { 
+                currentIndex++; 
+                loadMission(currentIndex); 
+            }, 2000);
+        }
+
+        // ================= ระบบด่าน =================
+        function loadMission(index) {
+            isChecking = false;
+            if (index >= missions.length) {
+                clearInterval(timerInterval);
+                document.getElementById('mission-view').style.display = 'none';
+                document.querySelector('.status-panel').style.display = 'none';
+                document.getElementById('result-view').style.display = 'block';
+                playSound('clear');
+                return;
+            }
+            const m = missions[index];
+            const contentDiv = document.getElementById('mission-content');
+            const bankDiv = document.getElementById('word-bank');
+            const btn = document.getElementById('btn-action');
+            const msg = document.getElementById('mission-msg');
+
+            document.getElementById('progress-bar').style.width = ((index / missions.length) * 100) + "%";
+            document.getElementById('mission-title').innerText = `MISSION ${index+1}/${missions.length}: ${m.title}`;
+            document.getElementById('mission-instruction').innerHTML = m.instruction;
+            contentDiv.innerHTML = ''; bankDiv.innerHTML = '';
+            bankDiv.style.display = 'none'; btn.style.display = 'none'; msg.innerText = '';
+            activeSlot = null;
+
+            if (m.type === 'fill') {
+                let html = m.sentence.replace(/{slot:(.*?)}/g, '<span class="drop-zone" onclick="playSound(\'click\'); selectSlot(this)" data-expected="$1"></span>');
+                contentDiv.innerHTML = `<div class="case-file">${html}</div>`;
+                m.choices.forEach(w => bankDiv.innerHTML += `<div class="word-piece" onclick="playSound(\'click\'); fillSlot(this)">${w}</div>`);
+                bankDiv.style.display = 'flex';
+                btn.innerText = 'VERIFY EVIDENCE'; btn.style.display = 'block'; btn.disabled = false;
+                
+                btn.onclick = function() {
+                    if(!isChecking) checkFill();
+                };
+            } else if (m.type === 'choice') {
+                m.choices.forEach(c => contentDiv.innerHTML += `<button class="choice-btn" onclick="checkChoice(this, ${c.correct})">${c.text}</button>`);
+            }
+
+            startTimer(); 
+        }
+
+        function selectSlot(slot) {
+            if(isChecking) return;
+            document.querySelectorAll('.drop-zone').forEach(el => el.classList.remove('active'));
+            if (slot.classList.contains('filled')) {
+                const word = slot.innerText;
+                document.querySelectorAll('.word-piece').forEach(p => { if (p.innerText === word && p.classList.contains('used')) p.classList.remove('used'); });
+                slot.innerText = ''; slot.classList.remove('filled');
+            }
+            activeSlot = slot; activeSlot.classList.add('active');
+        }
+
+        function fillSlot(piece) {
+            if (!activeSlot || piece.classList.contains('used') || isChecking) return;
+            activeSlot.innerText = piece.innerText; activeSlot.classList.add('filled', 'used');
+            activeSlot.classList.remove('active'); piece.classList.add('used'); activeSlot = null;
+        }
+
+        function checkFill() {
+            isChecking = true;
+            playSound('click');
+            
+            const slots = document.querySelectorAll('.drop-zone');
+            let correct = 0;
+            
+            let allFilled = true;
+            slots.forEach(slot => {
+                if(!slot.classList.contains('filled')) allFilled = false;
+            });
+            
+            const msg = document.getElementById('mission-msg');
+            const btn = document.getElementById('btn-action');
+            
+            if(!allFilled) {
+                msg.innerText = 'WARNING: เติมคำตอบให้ครบก่อน!'; msg.style.color = '#ffb300';
+                isChecking = false;
+                return;
+            }
+
+            slots.forEach(slot => {
+                if (slot.innerText.trim() === slot.getAttribute('data-expected')) { 
+                    slot.style.borderColor = '#00ff00'; correct++; 
+                } else { 
+                    slot.style.borderColor = '#ff5252'; 
+                }
+            });
+            
+            if (correct === slots.length) {
+                clearInterval(timerInterval);
+                playSound('correct');
+                msg.innerText = 'ACCESS GRANTED!'; msg.style.color = '#00ff00';
+                btn.innerText = 'PROCEED (ไปข้อถัดไป)';
+                document.querySelectorAll('.word-piece, .drop-zone').forEach(el => el.style.pointerEvents = 'none');
+                
+                btn.onclick = () => { playSound('click'); currentIndex++; loadMission(currentIndex); };
+            } else { 
+                playSound('wrong');
+                msg.innerText = 'ERROR: ไม่ถูกต้อง (-5 วินาที)'; msg.style.color = '#ff5252'; 
+                timeLeft -= 5;
+                if(timeLeft < 0) timeLeft = 0;
+                updateTimerUI();
+                
+                setTimeout(() => {
+                    msg.innerText = '';
+                    slots.forEach(slot => {
+                        slot.style.borderColor = '#00ff00';
+                        const word = slot.innerText;
+                        document.querySelectorAll('.word-piece').forEach(p => { if (p.innerText === word && p.classList.contains('used')) p.classList.remove('used'); });
+                        slot.innerText = ''; slot.classList.remove('filled');
+                    });
+                    isChecking = false;
+                    
+                    if(timeLeft <= 0) handleTimeOut();
+                }, 1000);
+            }
+        }
+
+        function checkChoice(btn, isCorrect) {
+            if(isChecking) return;
+            isChecking = true;
+            clearInterval(timerInterval); 
+            
+            document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+            const msg = document.getElementById('mission-msg');
+            
+            if (isCorrect) {
+                playSound('correct');
+                btn.classList.add('correct'); msg.innerText = 'CORRECT!'; msg.style.color = '#00ff00';
+                setTimeout(() => { currentIndex++; loadMission(currentIndex); }, 1000);
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong'); msg.innerText = 'ERROR!'; msg.style.color = '#ff5252';
+                setTimeout(() => { 
+                    currentIndex++; 
+                    loadMission(currentIndex); 
+                }, 1500);
+            }
+        }
+
+        async function saveAndReturn() {
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "UPLOADING... ⏳"; btn.disabled = true;
+            try {
+                // บันทึก Case 6 (ด่านสุดท้าย) ให้ 4 คะแนน
+                const url = `${WEB_APP_URL}?action=updateScore&agentId=${encodeURIComponent(agentData.agentId)}&caseNum=6&expGain=150&score=4&ticketGain=1`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    agentData.exp = parseInt(result.newExp);
+                    agentData.rank = result.newRank;
+                    agentData.tickets = parseInt(result.newTickets);
+                    agentData.currentCase = 7; // เซ็ตเป็น 7 แปลว่าเคลียร์หมดแล้ว
+                    
+                    localStorage.setItem('agentData', JSON.stringify(agentData));
+                    playSound('success');
+                    alert("MISSION COMPLETE! ยินดีด้วย คุณทำภารกิจหลักครบทั้งหมดแล้ว!");
+                    window.location.href = 'index.html';
+                } else {
+                    playSound('error'); alert("ERROR: " + result.message);
+                    btn.innerText = "SAVE & RETURN TO AGENCY"; btn.disabled = false;
+                }
+            } catch (e) { 
+                playSound('error'); alert("CONNECTION ERROR: บันทึกข้อมูลไม่สำเร็จ"); 
+                btn.innerText = "SAVE & RETURN TO AGENCY"; btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
